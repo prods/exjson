@@ -1,4 +1,4 @@
-# XJSON (Extensible JSON)
+# XJSON (eXtended JSON)
 
 *This Project is currently in Alpha State.*
 
