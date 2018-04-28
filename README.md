@@ -3,20 +3,48 @@
 *This Project is currently in Alpha State.*
 
 ### Introduction
-This project was born as part of a toolset I required for another project of mine. XSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible. It tries to be an in place replacement for some of the Python Standard JSON decoder functionality, but it is not its premise.
+This project was born as part of a toolset I required for another project of mine. XSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
 ### Supported Python Versions
 - Python 3.x
 
 ### API
-The XJson API partially supports the standard json library functions for in place replacement, if you only use loads() and dumps(). Some extended functionality may not be supported on all functions due to the need of specific parameters not supported by the standard library json library function signatures.
+The XJson API offers similar API to the one available on the Python standard JSON decoder/encoder library. 
 
-* [**loads(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
-          parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, \*\*kw)**](https://docs.python.org/3/library/json.html#json.load)
-  - Supports #INCLUDE directive. if `error_on_include_file_not_found` is set to `True` an exception is thrown if an included file is not found.
-  - Supports single-line and multi-line C style comments
-* [**dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
+* **loads**(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
+          parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, \*\*kw)
+          
+  **Arguments:**
+  - `json_file_path`: main json file to be loaded.
+  - `encoding`: encoding codec to use when loading the file and all included files. All included files should use the same encoding.
+  - `cls`: if specified, it uses the provided custom JSONDecoder instance to decode the json file. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `object_hook`: if specified, it will be called for every decoded JSON object and its value will be used instead of the default `dict`. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `parse_float`: if specified, it will be called for every `float` that is decoded. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `parse_int`: if specified, it will be called for every `int` that is decoded. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `parse_constant`: if specified, will be called with one of the following strings: '-Infinity', 'Infinity', 'NaN'. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `object_pairs_hook`: if specified, it will be called for every decoded JSON object with an ordered list of pairs. Its result will be used instead of the default `dict`. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `error_on_included_file_not_found`: if set to `True` an Exception is raised if an included file is not found.
+  
+  **Supported Extended Functionality:**
+   - Supports #INCLUDE directive. 
+   - Supports single-line and multi-line C style comments
+   
+* **dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
           allow_nan=True, cls=None, indent=None, separators=None,
-          default=None, sort_keys=False, \*\*kw)**](https://docs.python.org/3/library/json.html#json.dump)
+          default=None, sort_keys=False, \*\*kw)**
+          
+  **Arguments:**
+  - `obj`: object instance to encode (serialize).
+  - `skipkeys`: If set to `False` a `TypeError` is raised if the keys are not primitive types (`int`, `str`, `float` or `None`). [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+  - `ensure_ascii`: If set to `True` all Incoming ASCII characters will be escaped in the output, else they will kept as-is. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+  - `check_circular`: If set to `True` will check all classes and dictionaries for prevent circular references in order to prevent infinite recursion. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+  - `allow_nan`: If set to `True`, `NaN`, `Infinity`, and `-Infinity` will be encoded as such. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+  - `cls`: [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+  - `indent`: If set to `True` the output json will be indented. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+  - `separators`: If specified, it should be a tuple listing the item and key separators to use during encoding. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+  - `default`: [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder.default)
+  - `sort_keys`: It set to `True` the output dictionary will be sorted by key. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
+          
+  **Supported Extended Functionality:**
   - Does not support #INCLUDE directive.
   - Does not support comments.
 

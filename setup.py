@@ -45,7 +45,7 @@ setup(
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description='An Extensible JSON Parser Library',  # Required
+    description='An Extended JSON Parser Library',  # Required
 
     # This is an optional longer description of your project that represents
     # the body of text which users will see when they visit PyPI.
@@ -56,9 +56,7 @@ setup(
     # This field corresponds to the "Description" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-optional
     long_description="""XJSON is an extended JSON Parser which implements functionality not supported by 
-    the Python JSON parser standard library while trying to keep compliant with the JSON standard as much as possible. 
-    While its premise is not to be a full an inplace replacement for the Python Standard JSON library it offers some 
-    of its most used functions signatures for easy replacement/migration.""",  # Optional
+    the Python JSON parser standard library while trying to keep compliant with the JSON standard as much as possible. """,  # Optional
 
     # Denotes that our long_description is in Markdown; valid values are
     # text/plain, text/x-rst, and text/markdown
@@ -130,6 +128,13 @@ setup(
     #
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
 
+    project_urls={  # Optional
+        'Bug Reports': 'https://github.com/prods/xjson/issues',
+        #'Funding': 'https://donate.pypi.org',
+        #'Say Thanks!': 'http://saythanks.io/to/example',
+        'Source': 'https://github.com/prods/xjson',
+    },
+
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
     # installed, so they must be valid existing projects.
@@ -189,10 +194,5 @@ setup(
     # issues, where the source is hosted, where to say thanks to the package
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
-    project_urls={  # Optional
-        'Bug Reports': 'https://github.com/prods/xjson/issues',
-        #'Funding': 'https://donate.pypi.org',
-        #'Say Thanks!': 'http://saythanks.io/to/example',
-        'Source': 'https://github.com/prods/xjson',
-    },
+    py_modules=['xjson']
 )
