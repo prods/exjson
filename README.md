@@ -1,7 +1,7 @@
 # EXJSON 
 ## Extended JSON Parser for Python
 
-*This Project is currently in Alpha State*
+*This Project is under active development and it is not ready for production*
 
 ### Introduction
 This project was born as part of a toolset I required for another project of mine. EXJSON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
