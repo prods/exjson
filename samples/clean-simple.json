@@ -1,0 +1,10 @@
+{
+  "Name": "Sample Values",
+  "Enabled": true,
+  "Values": [
+    "A",
+    "AB",
+    "ABC"
+  ],
+  "Count": 3
+}

@@ -1,0 +1,54 @@
+{
+  /*
+      TEST MESSAGE
+  */
+
+  "Name": "Sample Pipeline",
+  "Description": "This is a sample Pipeline",
+  "Sequence_Id": 0,
+  "Parameters": {
+  },
+  "Properties": {
+  },
+  "Stages": [
+    /* #INCLUDE "pipeline.stage.001.json" */
+    {
+      "Name": "Second Stage",
+      "Description": "Retrieves Sample Data from file",
+      "Sequence_Id": 2,
+      "Parameters": {
+        "Dataset": "$.Stages.FirstStage.Steps.GetData.Result"
+      },
+      "Steps": [
+        {
+          "Name": "Transform Data",
+          "Description": "",
+          "Sequence_Id": 1,
+          "Parameters": {
+            "Parameter": "a"
+          },
+          "Provider": "NullProvider",
+          "Properties": {
+            "Stop_On_Error": true
+          },
+          "Enabled": true
+        },
+        {
+          "Name": "Save Data",
+          "Description": "",
+          "Sequence_Id": 2,
+          "Parameters": {
+
+          },
+          "Provider": "",
+          "Properties": {
+            "Stop_On_Error": true
+          },
+          "Enabled": true
+        }
+      ],
+      "Enabled": true
+    }
+  ],
+  "Enabled": true
+}

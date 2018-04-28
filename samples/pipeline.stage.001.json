@@ -1,0 +1,41 @@
+
+//  ███████╗████████╗ █████╗  ██████╗ ███████╗     ██╗
+//  ██╔════╝╚══██╔══╝██╔══██╗██╔════╝ ██╔════╝    ███║
+//  ███████╗   ██║   ███████║██║  ███╗█████╗      ╚██║
+//  ╚════██║   ██║   ██╔══██║██║   ██║██╔══╝       ██║
+//  ███████║   ██║   ██║  ██║╚██████╔╝███████╗     ██║
+//  ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝     ╚═╝
+
+/*
+  This is a test of C multi-line comments.
+  Another Line...
+  and Another Line...
+  ... one more line ...
+*/
+
+{
+  "Name": "First Stage",
+  "Description": "Retrieves Sample Data from file",
+  "Sequence_Id": 1,
+  "Parameters": {
+  },
+  "Steps": [
+    {
+      "Name": "Get Data",
+      "Description": "This is a sample get data step",
+      // Step Sequence Id
+      "Sequence_Id": 1,
+      // Parameters that will be passed to the specified provider
+      "Parameters": {
+      },
+      // Step Action Provider should be specified here
+      "Provider": "",
+      // Step Properties
+      "Properties": {
+        "Stop_On_Error": true
+      },
+      "Enabled": true
+    }
+  ],
+  "Enabled": true
+}
