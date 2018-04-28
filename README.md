@@ -3,8 +3,7 @@
 *This Project is currently in Alpha State.*
 
 ### Introduction
-This project was born as part of a toolset I required for another project of mine. XSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible. One important premise is to allow for an in place replacement of the Python Standard JSON decoder for easy migration/replacement.  
-
+This project was born as part of a toolset I required for another project of mine. XSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible. It tries to be an in place replacement for some of the Python Standard JSON decoder functionality, but it is not its premise.
 ### Supported Python Versions
 - Python 3.x
 
@@ -50,7 +49,7 @@ TEST
 */
 ```
 
-### How it works:
+### How does it work:
 
 #### Deserialization
 It uses CPython if available or the Standard Python JSON parser library if not available.
