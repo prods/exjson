@@ -4,8 +4,73 @@
 
 ### Introduction
 This project was born as part of a toolset I required for another project of mine. XSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
+
 ### Supported Python Versions
 - Python 3.x
+
+### Sample
+
+**samplefile1.json**
+```json
+{
+  // Sample Property
+  "name": "test file",
+  // Sample value set with an included object
+  "values": [
+    /* INCLUDE "samplefile2.json" */
+    {
+      "value_id": "923ko30k3",
+      "value": "Another Value"
+    }
+  ]
+}
+```
+
+**samplefile2.json**
+```json
+/*
+  INCLUDIBLE TEST FILE
+*/
+{
+   "value_id": "93987272",
+   "value": "This Value"
+}
+```
+
+**Usage**
+```python
+import xjson as json
+
+# Decode
+sample_value_set = json.loads("./samplefile1.json")
+
+# ... Do stuff with sample_value_set
+
+# Encode
+with open("./result.json") as f:
+    f.write(json.dumps(sample_value_set))
+
+```
+
+**result.json**
+```json
+{
+  "name": "test file",
+  "values": [
+    {
+       "value_id": "93987272",
+       "value": "This Value"
+    },
+    {
+      "value_id": "923ko30k3",
+      "value": "Another Value"
+    }
+  ]
+}
+```
+
+For more complex examples please check the [unit tests](https://github.com/prods/xjson/tree/master/tests).
+
 
 ### API
 The XJson API offers similar API to the one available on the Python standard JSON decoder/encoder library. 
