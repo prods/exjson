@@ -32,7 +32,7 @@ setup(
     # There are some restrictions on what makes a valid project name
     # specification here:
     # https://packaging.python.org/specifications/core-metadata/xjson
-    name='pyxjson',  # Required
+    name='exjson',  # Required
 
     # Versions should comply with PEP 440:
     # https://www.python.org/dev/peps/pep-0440/
@@ -40,7 +40,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.1',  # Required
+    version='1.0.0a1',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -55,7 +55,7 @@ setup(
     #
     # This field corresponds to the "Description" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-optional
-    long_description="""PyXJSON is an extended JSON Parser which implements functionality not supported by 
+    long_description="""exjson is an extended JSON Parser which implements functionality not supported by 
     the Python JSON parser standard library while trying to keep compliant with the JSON standard as much as possible. """,  # Optional
 
     # Denotes that our long_description is in Markdown; valid values are
@@ -74,7 +74,7 @@ setup(
     #
     # This field corresponds to the "Home-Page" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
-    url='https://github.com/prods/pyxjson',  # Optional
+    url='https://github.com/prods/exjson',  # Optional
 
     # This should be your name or the name of the organization which owns the
     # project.
@@ -96,7 +96,6 @@ setup(
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Serialization',
 
         # Pick your license as you wish
         'License :: OSI Approved :: MIT License',
@@ -126,13 +125,13 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
+    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'dist', 'build']),  # Required
 
     project_urls={  # Optional
-        'Bug Reports': 'https://github.com/prods/pyxjson/issues',
+        'Bug Reports': 'https://github.com/prods/exjson/issues',
         #'Funding': 'https://donate.pypi.org',
         #'Say Thanks!': 'http://saythanks.io/to/example',
-        'Source': 'https://github.com/prods/pyxjson',
+        'Source': 'https://github.com/prods/exjson',
     },
 
     # This field lists other packages that your project depends on to run.
@@ -194,5 +193,5 @@ setup(
     # issues, where the source is hosted, where to say thanks to the package
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
-    py_modules=['pyxjson']
+    py_modules=['exjson']
 )

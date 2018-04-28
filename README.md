@@ -1,10 +1,10 @@
-# PyXJSON 
+# EXJSON 
 ## Extended JSON Parser for Python
 
 *This Project is currently in Alpha State*
 
 ### Introduction
-This project was born as part of a toolset I required for another project of mine. PyXSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
+This project was born as part of a toolset I required for another project of mine. EXJSON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
 
 ### Supported Python Versions
 - Python 3.x
@@ -12,7 +12,7 @@ This project was born as part of a toolset I required for another project of min
 ### Install
 
 ```sh
-pip install git+https://github.com/prods/pyxjson.git
+pip install git+https://github.com/prods/exjson.git
 ```
 
 ### Sample
@@ -46,7 +46,7 @@ pip install git+https://github.com/prods/pyxjson.git
 
 **Usage**
 ```python
-import pyxjson as json
+import exjson as json
 
 # Decode
 sample_value_set = json.loads("./samplefile1.json")
@@ -76,11 +76,11 @@ with open("./result.json") as f:
 }
 ```
 
-For more complex examples please check the [unit tests](https://github.com/prods/xjson/tree/master/tests).
+For more complex examples please check the [unit tests](https://github.com/prods/exjson/tree/master/tests).
 
 
 ### API
-The PyXJSON API offers similar API to the one available on the Python standard JSON decoder/encoder library. 
+The exjson API offers similar API to the one available on the Python standard JSON decoder/encoder library. 
 
 * **loads**(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
           parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, \*\*kw)
@@ -166,6 +166,6 @@ Its simple. Comments are removed in memory before deserialization. This allows t
 * More unit tests
 * Value Reference from same or different file. Accessible by JSON property tree.
 * Basic Scripting. Dynamic values support. Example: Date Calculation and formatting.
-* Support serialization to multiple files by using `__xjson_file__ = "filename.json"` property.
+* Support serialization to multiple files by using `__exjson_file__ = "filename.json"` property.
 * Benchmarking?
 
