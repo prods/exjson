@@ -193,6 +193,6 @@ setup(
     # Examples listed include a pattern for specifying where the package tracks
     # issues, where the source is hosted, where to say thanks to the package
     # maintainers, and where to support the project financially. The key is
-    # what's used to render the link text on PyPI.
+    # what's used to render the link text on PyPI. 
     py_modules=['pyxjson']
 )

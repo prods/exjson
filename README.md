@@ -1,5 +1,5 @@
 # PyXJSON 
-## eXtended JSON Parser for Python
+## Extended JSON Parser for Python
 
 *This Project is currently in Alpha State*
 
