@@ -15,6 +15,7 @@ def loads(json_file_path, encoding=None, cls=None, object_hook=None, parse_float
           parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, **kw):
     file_full_path = os.path.abspath(json_file_path)
     file_path = os.path.dirname(file_full_path)
+    """Deserializes JSON on the specified file into a dictionary."""
     json_source = ""
     with open(file_full_path, encoding=encoding) as f:
         json_source = _include_files(file_path, f.read(), encoding, error_on_include_file_not_found)
@@ -26,6 +27,7 @@ def loads(json_file_path, encoding=None, cls=None, object_hook=None, parse_float
 def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
           allow_nan=True, cls=None, indent=None, separators=None,
           default=None, sort_keys=False, **kw):
+    """Serializes JSON into string."""
     return json.dumps(obj, skipkeys=skipkeys, ensure_ascii=ensure_ascii, check_circular=check_circular,
                       allow_nan=allow_nan, cls=cls, indent=indent, separators=separators,
                       default=default, sort_keys=sort_keys, **kw)
