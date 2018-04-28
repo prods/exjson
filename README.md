@@ -1,12 +1,19 @@
-# XJSON (eXtended JSON)
+# PyXJSON 
+## eXtended JSON Parser for Python
 
-*This Project is currently in Alpha State.*
+*This Project is currently in Alpha State*
 
 ### Introduction
-This project was born as part of a toolset I required for another project of mine. XSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
+This project was born as part of a toolset I required for another project of mine. PyXSJON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
 
 ### Supported Python Versions
 - Python 3.x
+
+### Install
+
+```sh
+pip install git+https://github.com/prods/pyxjson.git
+```
 
 ### Sample
 
@@ -39,7 +46,7 @@ This project was born as part of a toolset I required for another project of min
 
 **Usage**
 ```python
-import xjson as json
+import pyxjson as json
 
 # Decode
 sample_value_set = json.loads("./samplefile1.json")
@@ -73,7 +80,7 @@ For more complex examples please check the [unit tests](https://github.com/prods
 
 
 ### API
-The XJson API offers similar API to the one available on the Python standard JSON decoder/encoder library. 
+The PyXJSON API offers similar API to the one available on the Python standard JSON decoder/encoder library. 
 
 * **loads**(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
           parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, \*\*kw)

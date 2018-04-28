@@ -1,15 +1,15 @@
 from unittest import TestCase
 
-import xjson
+import pyxjson
 
 __author__ = 'Pedro Rodriguez'
 __project__ = 'xjson'
 
 
-class XJsonTests(TestCase):
+class PyXJSONTests(TestCase):
 
     def test_loading_simple_json(self):
-        simple_json = xjson.loads("./samples/clean-simple.json")
+        simple_json = pyxjson.loads("./samples/clean-simple.json")
         self.assertDictEqual(simple_json, {
             "Name": "Sample Values",
             "Enabled": True,
@@ -22,7 +22,7 @@ class XJsonTests(TestCase):
         })
 
     def test_load_json_with_comments(self):
-        simple_json = xjson.loads("./samples/pipeline.stage.001.json", encoding='utf-8')
+        simple_json = pyxjson.loads("./samples/pipeline.stage.001.json", encoding='utf-8')
         self.assertDictEqual(simple_json, {
             "Name": "First Stage",
             "Description": "Retrieves Sample Data from file",
@@ -47,7 +47,7 @@ class XJsonTests(TestCase):
         })
 
     def test_load_json_with_comments_and_included_files(self):
-        simple_json = xjson.loads("./samples/pipeline.json", encoding='utf-8')
+        simple_json = pyxjson.loads("./samples/pipeline.json", encoding='utf-8')
         self.assertDictEqual(simple_json, {
             "Name": "Sample Pipeline",
             "Description": "This is a sample Pipeline",

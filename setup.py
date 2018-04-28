@@ -55,7 +55,7 @@ setup(
     #
     # This field corresponds to the "Description" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-optional
-    long_description="""XJSON is an extended JSON Parser which implements functionality not supported by 
+    long_description="""PyXJSON is an extended JSON Parser which implements functionality not supported by 
     the Python JSON parser standard library while trying to keep compliant with the JSON standard as much as possible. """,  # Optional
 
     # Denotes that our long_description is in Markdown; valid values are
@@ -74,7 +74,7 @@ setup(
     #
     # This field corresponds to the "Home-Page" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
-    url='https://github.com/prods/xjson',  # Optional
+    url='https://github.com/prods/pyxjson',  # Optional
 
     # This should be your name or the name of the organization which owns the
     # project.
@@ -129,10 +129,10 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
 
     project_urls={  # Optional
-        'Bug Reports': 'https://github.com/prods/xjson/issues',
+        'Bug Reports': 'https://github.com/prods/pyxjson/issues',
         #'Funding': 'https://donate.pypi.org',
         #'Say Thanks!': 'http://saythanks.io/to/example',
-        'Source': 'https://github.com/prods/xjson',
+        'Source': 'https://github.com/prods/pyxjson',
     },
 
     # This field lists other packages that your project depends on to run.
@@ -194,5 +194,5 @@ setup(
     # issues, where the source is hosted, where to say thanks to the package
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
-    py_modules=['xjson']
+    py_modules=['pyxjson']
 )
