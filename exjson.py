@@ -13,15 +13,28 @@ _INCLUDE_DIRECTIVE = re.compile(
     re.IGNORECASE | re.MULTILINE)
 
 
-def loads(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
-          parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, **kw):
+def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
+         parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, **kw):
+    """Decodes a JSON source file into a dictionary"""
     file_full_path = os.path.abspath(json_file_path)
     file_path = os.path.dirname(file_full_path)
-    """Deserializes JSON on the specified file into a dictionary."""
-    json_source = ""
     with open(file_full_path, encoding=encoding) as f:
-        json_source = _include_files(file_path, f.read(), encoding, error_on_include_file_not_found)
-        json_source = _remove_comments(json_source)
+        json_source = f.read()
+    return loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
+                 parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook,
+                 error_on_include_file_not_found=error_on_include_file_not_found, includes_path=file_path, **kw)
+
+
+def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=None,
+          parse_int=None, parse_constant=None, object_pairs_hook=None,
+          error_on_include_file_not_found=False, includes_path=None, **kw):
+    """Decodes a provided JSON source string into a dictionary"""
+    if json_string is None or json_string.strip(' ') == '':
+        raise AttributeError('No JSON source was provided for decoding.')
+    if includes_path is None:
+        includes_path = os.path.dirname(os.path.realpath(__file__))
+    json_source = _include_files(includes_path, json_string, encoding, error_on_include_file_not_found)
+    json_source = _remove_comments(json_source)
     return json.loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                       parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
 
@@ -54,9 +67,9 @@ def _include_files(include_files_path, string, encoding=None, error_on_file_not_
                     values = file_name.split(":")
                     property_name = values[0]
                     file_name = values[1]
-                include_file_path = os.path.join(include_files_path, file_name)
+                include_file_path = os.path.normpath(os.path.join(include_files_path, file_name))
                 if os.path.abspath(include_file_path):
-                    # TODO: Cache content if file is included multiple times
+                    # TODO: Cache the content if file is found multiple times
                     with open(include_file_path, "r", encoding=encoding) as f:
                         included_source = f.read()
                         # Extract content from include file removing comments, end of lines and tabs
