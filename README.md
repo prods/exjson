@@ -49,7 +49,7 @@ pip install git+https://github.com/prods/exjson.git
 import exjson as json
 
 # Decode
-sample_value_set = json.loads("./samplefile1.json")
+sample_value_set = json.load("./samplefile1.json")
 
 # ... Do stuff with sample_value_set
 
