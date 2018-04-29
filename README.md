@@ -82,8 +82,10 @@ For more complex examples please check the [unit tests](https://github.com/prods
 ### API
 The exjson API offers similar API to the one available on the Python standard JSON decoder/encoder library. 
 
-* **loads**(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
+* **load**(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
           parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, \*\*kw)
+          
+  Deserializes JSON file into a dictionary.
           
   **Arguments:**
   - `json_file_path`: main json file to be loaded.
@@ -99,11 +101,34 @@ The exjson API offers similar API to the one available on the Python standard JS
   **Supported Extended Functionality:**
    - Supports #INCLUDE directive. 
    - Supports single-line and multi-line C style comments
+  
+* **loads**(json_string, encoding=None, cls=None, object_hook=None, parse_float=None,
+          parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, includes_path=None, \*\*kw)
+  
+  Deserializes JSON string into a dictionary.
+          
+  **Arguments:**
+  - `json_file_path`: main json file to be loaded.
+  - `encoding`: encoding codec to use when loading the file and all included files. All included files should use the same encoding.
+  - `cls`: if specified, it uses the provided custom JSONDecoder instance to decode the json file. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `object_hook`: if specified, it will be called for every decoded JSON object and its value will be used instead of the default `dict`. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `parse_float`: if specified, it will be called for every `float` that is decoded. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `parse_int`: if specified, it will be called for every `int` that is decoded. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `parse_constant`: if specified, will be called with one of the following strings: '-Infinity', 'Infinity', 'NaN'. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `object_pairs_hook`: if specified, it will be called for every decoded JSON object with an ordered list of pairs. Its result will be used instead of the default `dict`. [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONDecoder)
+  - `error_on_included_file_not_found`: if set to `True` an Exception is raised if an included file is not found.
+  - `includes_path`: if provided it will be used to set the root path from where the included files will be loaded. When not provided the executing python script path will be used. Please, bear in mind that `#INCLUDE` directive file path is consider relative to this one.
+  
+  **Supported Extended Functionality:**
+   - Supports #INCLUDE directive. 
+   - Supports single-line and multi-line C style comments
    
 * **dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
           allow_nan=True, cls=None, indent=None, separators=None,
           default=None, sort_keys=False, \*\*kw)**
-          
+  
+  Serializes a python object/dictionary instance into a JSON string.
+  
   **Arguments:**
   - `obj`: object instance to encode (serialize).
   - `skipkeys`: If set to `False` a `TypeError` is raised if the keys are not primitive types (`int`, `str`, `float` or `None`). [See Python docs for details.](https://docs.python.org/3/library/json.html#json.JSONEncoder)
@@ -124,15 +149,42 @@ The exjson API offers similar API to the one available on the Python standard JS
  * C Style Include directive
  Loads specified file from the same path where the file is being loaded.
  Supports 2 syntax always enclosed in comments:
+ 
  ```c
-/* #INCLUDE <_secondary.json> */
+ /* #INCLUDE <[PropertyName:]json_file_relative_path> */
+ ```
+ 
+ **PropertyName** _(Optional)_
+ 
+ This is the name of the JSON property that will encapsulate the included file content. This required when including a file between other properties.
+ 
+ 
+ ```json
+ {
+  "Name": "Test"
+  /* #INCLUDES <Values:values.json> */
+ }
+ ```
+ 
+ ```json
+ {
+  "Name": "Test",
+  "Values": { 
+    "1": "Test1",
+    "2": "Test2"
+   }
+ }
+ ```
+ 
+**json_file_relative_path** 
+ 
+This is the json file name including relative path (if located in a nested folder) to the path where the main json file exists. When the main json is loaded as a string and the `includes_path` is not specified it will use the executing python script path.
+If the script is not found an error will be raised.
+ 
 
-// #INCLUDE <_secondary.json>
+The `#INCLUDE` directive arguments can be enclosed in `<>` or `""`.
 
-/* #INCLUDE "_secondary.json" */
 
-// #INCLUDE "_secondary.json"
-```
 
 * C Style Comments
 Supports C Style Comments.
