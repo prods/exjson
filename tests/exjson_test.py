@@ -175,14 +175,14 @@ class PyXJSONTests(TestCase):
         self.assertDictEqual(simple_json, {
             "Name": "Test",
             "Value": {
-            "Name": "Sample Values",
-            "Enabled": True,
-            "Values": [
-                "A",
-                "AB",
-                "ABC"
-            ],
-            "Count": 3
+                "Name": "Sample Values",
+                "Enabled": True,
+                "Values": [
+                    "A",
+                    "AB",
+                    "ABC"
+                ],
+                "Count": 3
             },
             "Enabled": True
         })
@@ -314,5 +314,58 @@ class PyXJSONTests(TestCase):
             "Other3": {
                 "Value_id": "4034A54700430B6A37E56B5C38070F6B1F333B7B",
                 "Value": "test message 2"
+            }
+        })
+
+    def test_loads_json_includes_followed_by_comment_before_EOF(self):
+        json_source = """{
+        // This tests that the include ignores comments
+        /* #INCLUDE <Test1:tests/samples/loads-include-test.json> */
+        "Name": "Test",
+        "Test": [
+            /* #INCLUDE <tests/samples/loads-include-test.json> */
+        ],
+        "Enabled": true,
+        // #INCLUDE <Value:tests/samples/loads-include-test.json>
+        /*
+        No more properties beyond here...
+        */
+        }
+        """
+        simple_json = exjson.loads(json_source, encoding='utf-8')
+        self.assertDictEqual(simple_json, {
+            "Name": "Test",
+            "Enabled": True,
+            "Test1": {
+                "Name": "Sample Values",
+                "Enabled": True,
+                "Values": [
+                    "A",
+                    "AB",
+                    "ABC"
+                ],
+                "Count": 3
+            },
+            "Test": [
+                {
+                    "Name": "Sample Values",
+                    "Enabled": True,
+                    "Values": [
+                        "A",
+                        "AB",
+                        "ABC"
+                    ],
+                    "Count": 3
+                }
+            ],
+            "Value": {
+                "Name": "Sample Values",
+                "Enabled": True,
+                "Values": [
+                    "A",
+                    "AB",
+                    "ABC"
+                ],
+                "Count": 3
             }
         })
