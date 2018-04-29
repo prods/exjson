@@ -126,21 +126,21 @@ class PyXJSONTests(TestCase):
             "Name": "Test Name",
             "Values": [
                 {
-                    "Value_id": "i93op;l2",
+                    "Value_id": "0AEC4D9BC52AB96E424CD057A59CC45EFF314107",
                     "Value": "test message 1"
                 },
                 {
-                    "Value_id": "23omfp3--3lfl3kf",
+                    "Value_id": "FFEB4A18FF1C37E59290C86B92DF28F65DB584D9",
                     "Value": "test message"
                 }
             ],
             "Other1": {
-                "Value_id": "39joll,3f",
+                "Value_id": "512D4C2E2A63AC8C385A1E2315ABCF4B3D5C7A9F",
                 "Value": "test message 2"
             },
             "Other2": "Test Value",
             "Other3": {
-                "Value_id": "89787h,67",
+                "Value_id": "4034A54700430B6A37E56B5C38070F6B1F333B7B",
                 "Value": "test message 2"
             }
         })
