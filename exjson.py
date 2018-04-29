@@ -36,26 +36,36 @@ def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
 def _include_files(include_files_path, string, encoding=None, error_on_file_not_found=False):
     """Include all files included in current json string"""
     includes = re.finditer(_INCLUDE_DIRECTIVE, string)
-    for match_num, match in enumerate(includes):
-        included_source = ""
-        include_call_string = str(match[match_num])
-        file_name = match.groups()[1]
-        if file_name is not None:
-            file_name = file_name.replace("<", "").replace(">", "").replace("\"", "").replace("'", "").strip(" ")
-        include_file_path = os.path.join(include_files_path, file_name)
-        if os.path.abspath(include_file_path):
-            with open(include_file_path, "r", encoding=encoding) as f:
-                included_source = f.read()
-                included_source = _remove_comments(included_source).strip(' ').strip('\n').strip('\t')
-                # Add Trailing Comma for object separation
-                if string.split(include_call_string)[1].strip('\n').strip('\t').strip(' ').startswith(
-                        "{") and not included_source.endswith(","):
-                    included_source = included_source + ","
-                string = string.replace(include_call_string, included_source)
+    # TEST
+    test = [{ "n": n, "m": m.groups() } for n, m in enumerate(includes)]
 
-        else:
-            if error_on_file_not_found:
-                raise IOError("{0} included file was not found.".format(include_file_path))
+    for match_num, match in enumerate(includes):
+        if len(match.groups()) > 0:
+            for value in match.groups():
+                if value is not None:
+                    included_source = ""
+                    include_call_string = str(match[match_num])
+                    property_name = ""
+                    file_name = value
+                    if ":" in value:
+                        values = value.split(":")
+                        property_name = values[0]
+                        file_name = values[1]
+                    if file_name is not None:
+                        file_name = file_name.replace("<", "").replace(">", "").replace("\"", "").replace("'", "").strip(" ")
+                    include_file_path = os.path.join(include_files_path, file_name)
+                    if os.path.abspath(include_file_path):
+                        with open(include_file_path, "r", encoding=encoding) as f:
+                            included_source = f.read()
+                            included_source = _remove_comments(included_source).strip(' ').strip('\n').strip('\t')
+                            # Add Trailing comma
+                            if string.split(include_call_string)[1].strip('\n').strip('\t').strip(' ').startswith(
+                                    "{") and not included_source.endswith(","):
+                                included_source = included_source + ","
+                            string = string.replace(include_call_string, included_source)
+                    else:
+                        if error_on_file_not_found:
+                            raise IOError("{0} included file was not found.".format(include_file_path))
     return string
 
 

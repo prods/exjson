@@ -119,3 +119,28 @@ class PyXJSONTests(TestCase):
             ],
             "Enabled": True
         })
+
+    def test_load_json_in_different_positions(self):
+        json_content = exjson.loads("./samples/multi-include.json", encoding='utf-8')
+        self.assertDictEqual(json_content, {
+            "Name": "Test Name",
+            "Values": [
+                {
+                    "Value_id": "i93op;l2",
+                    "Value": "test message 1"
+                },
+                {
+                    "Value_id": "23omfp3--3lfl3kf",
+                    "Value": "test message"
+                }
+            ],
+            "Other1": {
+                "Value_id": "39joll,3f",
+                "Value": "test message 2"
+            },
+            "Other2": "Test Value",
+            "Other3": {
+                "Value_id": "89787h,67",
+                "Value": "test message 2"
+            }
+        })

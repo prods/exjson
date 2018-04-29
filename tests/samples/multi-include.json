@@ -1,0 +1,13 @@
+{
+  "Name": "Test Name",
+  "Values": [
+    // #INCLUDE <multi-include.001.json
+    {
+      "Value_id": "23omfp3--3lfl3kf",
+      "Value": "test message"
+    }
+  ],
+  // #INCLUDE <Other1:multi-include.002.json>
+  "Other2": "Test Value"
+  // #INCLUDE <Other3:multi-include.003.json>
+}
