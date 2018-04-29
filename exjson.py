@@ -84,14 +84,14 @@ def _include_files(include_files_path, string, encoding=None, error_on_file_not_
                         included_source_surrounding_src = string.split(include_call_string)
                         included_source_surrounding_src_count = len(included_source_surrounding_src) - 1
                         for i in range(0, included_source_surrounding_src_count):
-                            included_call_pre_last_char = _get_last_char(included_source_surrounding_src[i])
+                            included_call_pre_last_char = _get_last_char(_remove_comments(included_source_surrounding_src[i]))
                             # Add comma at the beginning of the included code if required
                             if included_call_pre_last_char not in _JSON_OPENING_CHARS and included_source_first_char != ',':
                                 included_source = "," + included_source
                             # Add Trailing comma if code following the included statement does not have one.
                             if i < included_source_surrounding_src_count:
                                 if included_source_last_char != ',' and _get_first_char(
-                                        included_source_surrounding_src[i + 1]) not in _JSON_CLOSING_CHARS:
+                                        _remove_comments(included_source_surrounding_src[i + 1])) not in _JSON_CLOSING_CHARS:
                                     included_source = included_source + ','
                         string = string.replace(include_call_string, included_source)
                 else:
