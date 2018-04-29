@@ -56,6 +56,7 @@ def _include_files(include_files_path, string, encoding=None, error_on_file_not_
                     file_name = values[1]
                 include_file_path = os.path.join(include_files_path, file_name)
                 if os.path.abspath(include_file_path):
+                    # TODO: Cache content if file is included multiple times
                     with open(include_file_path, "r", encoding=encoding) as f:
                         included_source = f.read()
                         # Extract content from include file removing comments, end of lines and tabs
