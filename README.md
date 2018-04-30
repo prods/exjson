@@ -9,10 +9,10 @@ This project was born as part of a toolset I required for another project of min
 ### Supported Python Versions
 - Python 3.x
 
-### Install
+### Install/Upgrade
 
 ```sh
-pip install git+https://github.com/prods/exjson.git
+pip install exjson --upgrade
 ```
 
 ### Sample
