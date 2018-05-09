@@ -325,7 +325,7 @@ class PyXJSONTests(TestCase):
         "Test": [
             /* #INCLUDE <tests/samples/loads-include-test.json> */
         ],
-        "Enabled": true,
+        "Enabled": true
         // #INCLUDE <Value:tests/samples/loads-include-test.json>
         /*
         No more properties beyond here...
@@ -367,5 +367,44 @@ class PyXJSONTests(TestCase):
                     "ABC"
                 ],
                 "Count": 3
+            }
+        })
+
+    def test_loads_json_missing_include_raises_an_error(self):
+        result = None
+        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+            json_source = f.read()
+            try:
+                json_content = exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
+                                            error_on_include_file_not_found=True)
+            except Exception as ex:
+                result = ex
+        self.assertIsNotNone(result)
+
+    def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
+        result = None
+        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+            json_source = f.read()
+            try:
+                json_content = exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
+                                            error_on_include_file_not_found=False)
+            except Exception as ex:
+                self.fail(ex)
+        self.assertDictEqual(json_content, {
+            "Name": "Test Name",
+            "Values": [
+                {
+                    "Value_id": "FFEB4A18FF1C37E59290C86B92DF28F65DB584D9",
+                    "Value": "test message"
+                }
+            ],
+            "Other1": {
+                "Value_id": "512D4C2E2A63AC8C385A1E2315ABCF4B3D5C7A9F",
+                "Value": "test message 2"
+            },
+            "Other2": "Test Value",
+            "Other3": {
+                "Value_id": "4034A54700430B6A37E56B5C38070F6B1F333B7B",
+                "Value": "test message 2"
             }
         })
