@@ -408,3 +408,39 @@ class PyXJSONTests(TestCase):
                 "Value": "test message 2"
             }
         })
+
+    # Multi-Level Include
+
+    def test_loads_json_with_four_level_include(self):
+        simple_json = exjson.load("./samples/multi-level-include/multi-level-include-main.json", encoding='utf-8')
+        self.assertDictEqual(simple_json, {
+            "Name": "Test",
+            "Value": "30l2l3l2l3l2--3lo",
+            "Level1": {
+                "Name": "Test 1",
+                "Value1": "1",
+                "Level2": {
+                    "Name": "Test 2",
+                    "Value1": "2",
+                    "Level2": {
+                        "Name": "Test 3",
+                        "Value1": "3"
+                    }
+                }
+            },
+            "Level2": {
+                "Name": "Test 2",
+                "Value1": "2",
+                "Level2": {
+                    "Name": "Test 3",
+                    "Value1": "3"
+                }
+            },
+            "Level3": {
+                "Name": "Test 3",
+                "Value1": "3"
+            }
+        })
+
+    def test_loads_json_with_multiple_level_recursion_detection(self):
+        self.assertIsNotNone(None)

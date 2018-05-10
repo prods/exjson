@@ -1,3 +1,5 @@
+import uuid
+
 try:
     import cjson as json
 except ImportError:
@@ -12,6 +14,7 @@ _INCLUDE_DIRECTIVE = re.compile(
     r'\/\*\#INCLUDE(.*?)\*/|\/\*\ \#INCLUDE(.*?)\*/|\/\/\#INCLUDE(.*\ ?)|\/\/\ \#INCLUDE(.*\ ?)',
     re.IGNORECASE | re.MULTILINE)
 
+_json_includes_cache = {}
 
 def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
          parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, **kw):
@@ -29,12 +32,19 @@ def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=No
           parse_int=None, parse_constant=None, object_pairs_hook=None,
           error_on_include_file_not_found=False, includes_path=None, **kw):
     """Decodes a provided JSON source string into a dictionary"""
+    global _json_includes_cache
     if json_string is None or json_string.strip(' ') == '':
         raise AttributeError('No JSON source was provided for decoding.')
     if includes_path is None:
         includes_path = os.path.dirname(os.path.realpath(__file__))
-    json_source = _include_files(includes_path, json_string, encoding, error_on_include_file_not_found)
+    # Initialize Include Cache
+    _json_includes_cache_key = str(uuid.uuid4())
+    _json_includes_cache = { _json_includes_cache_key: {} }
+    # Process Include Directives
+    json_source = _include_files(includes_path, json_string, encoding, _json_includes_cache[_json_includes_cache_key], error_on_include_file_not_found)
     json_source = _remove_comments(json_source)
+    # Drop Cache Key
+    _json_includes_cache.pop(_json_includes_cache_key, None)
     return json.loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                       parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
 
@@ -48,11 +58,12 @@ def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
                       default=default, sort_keys=sort_keys, **kw)
 
 
-def _include_files(include_files_path, string, encoding=None, error_on_file_not_found=False):
+def _include_files(include_files_path, string, encoding=None, cache = None, error_on_file_not_found=False):
     """Include all files included in current json string"""
     includes = re.finditer(_INCLUDE_DIRECTIVE, string)
     # Files Cache
-    included_file_cache = {}
+    if cache is None:
+        cache = {}
     for match_num, match in enumerate(includes):
         if len(match.groups()) > 0:
             for value in match.groups():
@@ -69,16 +80,17 @@ def _include_files(include_files_path, string, encoding=None, error_on_file_not_
                 include_file_path = os.path.normpath(os.path.join(include_files_path, file_name))
                 if os.path.abspath(include_file_path):
                     # Cache File if not already cached.
-                    if include_file_path not in included_file_cache:
+                    if include_file_path not in cache:
                         try:
                             with open(include_file_path, "r", encoding=encoding) as f:
-                                included_file_cache[include_file_path] = f.read()
+                                included_file_source = _include_files(include_files_path, f.read(), encoding, cache, error_on_file_not_found)
+                                cache[include_file_path] = included_file_source
                         except IOError as ex:
                             if error_on_file_not_found:
                                 raise IOError("Included file '{0}' was not found.".format(include_file_path))
                     # Extract content from include file removing comments, end of lines and tabs
-                    if include_file_path in included_file_cache:
-                        included_source = included_file_cache[include_file_path]
+                    if include_file_path in cache:
+                        included_source = cache[include_file_path]
                         included_source = _remove_comments(included_source).strip(' ').strip('\r\n').strip('\n').strip(
                             '\t')
                     else:
@@ -124,3 +136,4 @@ def _get_last_char(string):
 
 def _get_first_char(string):
     return string.replace(' ', '').replace('\r\n', '').replace('\n', '')[:1]
+
