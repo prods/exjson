@@ -443,4 +443,8 @@ class PyXJSONTests(TestCase):
         })
 
     def test_loads_json_with_multiple_level_recursion_detection(self):
-        self.assertIsNotNone(None)
+        try:
+            simple_json = exjson.load("./samples/multi-level-include/multi-level-include-recursive-first.json", encoding='utf-8')
+            self.fail()
+        except exjson.IncludeRecursionError as ex:
+            self.assertTrue("multi-level-include-recursive-first.json" in str(ex))

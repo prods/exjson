@@ -1,0 +1,6 @@
+{
+  "Name": "Test",
+  "Value": "00001"
+  /* #INCLUDE <Level1:multi-level-include-002.json> */
+  /* #INCLUDE <Level1:multi-level-include-recursive-second.json> */
+}

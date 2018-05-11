@@ -13,8 +13,9 @@ _COMMENTS_REGEX = re.compile(r'/\*.*?\*/', re.DOTALL)
 _INCLUDE_DIRECTIVE = re.compile(
     r'\/\*\#INCLUDE(.*?)\*/|\/\*\ \#INCLUDE(.*?)\*/|\/\/\#INCLUDE(.*\ ?)|\/\/\ \#INCLUDE(.*\ ?)',
     re.IGNORECASE | re.MULTILINE)
+_PARENT_FILE_KEY = "parent_file"
+_PARENT_FILE_STRING_SRC = "__string__"
 
-_json_includes_cache = {}
 
 def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
          parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, **kw):
@@ -23,6 +24,10 @@ def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=
     file_path = os.path.dirname(file_full_path)
     with open(file_full_path, encoding=encoding) as f:
         json_source = f.read()
+    # Inject source file path
+    if kw is None:
+        kw = {}
+    kw[_PARENT_FILE_KEY] = file_full_path
     return loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                  parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook,
                  error_on_include_file_not_found=error_on_include_file_not_found, includes_path=file_path, **kw)
@@ -32,19 +37,24 @@ def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=No
           parse_int=None, parse_constant=None, object_pairs_hook=None,
           error_on_include_file_not_found=False, includes_path=None, **kw):
     """Decodes a provided JSON source string into a dictionary"""
-    global _json_includes_cache
+    _json_includes_cache = {}
     if json_string is None or json_string.strip(' ') == '':
         raise AttributeError('No JSON source was provided for decoding.')
     if includes_path is None:
         includes_path = os.path.dirname(os.path.realpath(__file__))
     # Initialize Include Cache
-    _json_includes_cache_key = str(uuid.uuid4())
-    _json_includes_cache = { _json_includes_cache_key: {} }
+    _json_includes_cache = {}
     # Process Include Directives
-    json_source = _include_files(includes_path, json_string, encoding, _json_includes_cache[_json_includes_cache_key], error_on_include_file_not_found)
+    if kw is not None and _PARENT_FILE_KEY in kw:
+        parent_file_path = kw[_PARENT_FILE_KEY]
+    else:
+        parent_file_path = _PARENT_FILE_STRING_SRC
+    json_source = _include_files(includes_path, json_string, encoding, _json_includes_cache,
+                                 error_on_include_file_not_found, [parent_file_path])
     json_source = _remove_comments(json_source)
-    # Drop Cache Key
-    _json_includes_cache.pop(_json_includes_cache_key, None)
+    # Drop parent file key before calling native json loads since it is not supported
+    if kw is not None and _PARENT_FILE_KEY in kw:
+        kw.pop(_PARENT_FILE_KEY, None)
     return json.loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                       parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
 
@@ -58,65 +68,81 @@ def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
                       default=default, sort_keys=sort_keys, **kw)
 
 
-def _include_files(include_files_path, string, encoding=None, cache = None, error_on_file_not_found=False):
+def _include_files(include_files_path, string, encoding=None, cache=None, error_on_file_not_found=False,
+                   parent_file_paths=None):
     """Include all files included in current json string"""
-    includes = re.finditer(_INCLUDE_DIRECTIVE, string)
-    # Files Cache
-    if cache is None:
-        cache = {}
-    for match_num, match in enumerate(includes):
-        if len(match.groups()) > 0:
-            for value in match.groups():
-                if value is None:
-                    continue
+    try:
+        includes = re.finditer(_INCLUDE_DIRECTIVE, string)
+        # Files Cache
+        if cache is None:
+            cache = {}
+        if parent_file_paths is None:
+            parent_file_paths = []
+        for match_num, match in enumerate(includes):
+            if len(match.groups()) > 0:
+                for value in match.groups():
+                    if value is None:
+                        continue
+                    included_source = ""
+                    include_call_string = str(match.group())
+                    property_name = ""
+                    file_name = _remove_enclosing_chars(value)
+                    if ":" in file_name:
+                        values = file_name.split(":")
+                        property_name = values[0]
+                        file_name = values[1]
+                    include_file_path = os.path.normpath(os.path.join(include_files_path, file_name))
+                    if os.path.abspath(include_file_path):
+                        # Cache File if not already cached.
+                        if include_file_path not in cache:
+                            try:
+                                if include_file_path in cache.keys() or include_file_path in parent_file_paths:
+                                    raise IncludeRecursionError(include_file_path)
+                                parent_file_list = parent_file_paths + [include_file_path]
+                                with open(include_file_path, "r", encoding=encoding) as f:
+                                    cache[include_file_path] = {
+                                        "src": ""
+                                    }
+                                    included_file_source = _include_files(include_files_path, f.read(), encoding, cache,
+                                                                          error_on_file_not_found,
+                                                                          parent_file_list)
+                                cache[include_file_path]["src"] = included_file_source
+                            except IOError as ex:
+                                if error_on_file_not_found:
+                                    raise IOError("Included file '{0}' was not found.".format(include_file_path))
+            # Extract content from include file removing comments, end of lines and tabs
+            if include_file_path in cache:
+                included_source = cache[include_file_path]["src"]
+                included_source = _remove_comments(included_source).strip(' ').strip('\r\n').strip('\n').strip(
+                    '\t')
+            else:
                 included_source = ""
-                include_call_string = str(match.group())
-                property_name = ""
-                file_name = _remove_enclosing_chars(value)
-                if ":" in file_name:
-                    values = file_name.split(":")
-                    property_name = values[0]
-                    file_name = values[1]
-                include_file_path = os.path.normpath(os.path.join(include_files_path, file_name))
-                if os.path.abspath(include_file_path):
-                    # Cache File if not already cached.
-                    if include_file_path not in cache:
-                        try:
-                            with open(include_file_path, "r", encoding=encoding) as f:
-                                included_file_source = _include_files(include_files_path, f.read(), encoding, cache, error_on_file_not_found)
-                                cache[include_file_path] = included_file_source
-                        except IOError as ex:
-                            if error_on_file_not_found:
-                                raise IOError("Included file '{0}' was not found.".format(include_file_path))
-                    # Extract content from include file removing comments, end of lines and tabs
-                    if include_file_path in cache:
-                        included_source = cache[include_file_path]
-                        included_source = _remove_comments(included_source).strip(' ').strip('\r\n').strip('\n').strip(
-                            '\t')
-                    else:
-                        included_source = ""
-                    # Add Property Name if specified
-                    if property_name is not None and property_name.strip(' ') != '':
-                        included_source = "\"{0}\": {1}".format(property_name, included_source)
-                    # Add Comma if needed and determine if property is required
-                    included_source_first_char = _get_first_char(included_source)
-                    included_source_last_char = _get_last_char(included_source)
-                    included_source_surrounding_src = string.split(include_call_string)
-                    included_source_surrounding_src_count = len(included_source_surrounding_src) - 1
-                    for i in range(0, included_source_surrounding_src_count):
-                        included_call_pre_last_char = _get_last_char(
-                            _remove_comments(included_source_surrounding_src[i]))
-                        # Add comma at the beginning of the included code if required
-                        if included_call_pre_last_char not in _JSON_OPENING_CHARS and included_source_first_char != ',':
-                            included_source = "," + included_source
-                        # Add Trailing comma if code following the included statement does not have one.
-                        if included_source.strip(' ') != '' and i < included_source_surrounding_src_count:
-                            if included_source_last_char != ',' and _get_first_char(
-                                    _remove_comments(
-                                        included_source_surrounding_src[i + 1])) not in _JSON_CLOSING_CHARS:
-                                included_source = included_source + ','
-                    string = string.replace(include_call_string, included_source)
-    return string
+            # Add Property Name if specified
+            if property_name is not None and property_name.strip(' ') != '':
+                included_source = "\"{0}\": {1}".format(property_name, included_source)
+            # Add Comma if needed and determine if property is required
+            included_source_first_char = _get_first_char(included_source)
+            included_source_last_char = _get_last_char(included_source)
+            included_source_surrounding_src = string.split(include_call_string)
+            included_source_surrounding_src_count = len(included_source_surrounding_src) - 1
+            for i in range(0, included_source_surrounding_src_count):
+                included_call_pre_last_char = _get_last_char(
+                    _remove_comments(included_source_surrounding_src[i]))
+                # Add comma at the beginning of the included code if required
+                if included_call_pre_last_char not in _JSON_OPENING_CHARS and included_source_first_char != ',':
+                    included_source = "," + included_source
+                # Add Trailing comma if code following the included statement does not have one.
+                if included_source.strip(' ') != '' and i < included_source_surrounding_src_count:
+                    if included_source_last_char != ',' and _get_first_char(
+                            _remove_comments(
+                                included_source_surrounding_src[i + 1])) not in _JSON_CLOSING_CHARS:
+                        included_source = included_source + ','
+            string = string.replace(include_call_string, included_source)
+        return string
+    except IncludeRecursionError as ex:
+        raise
+    except Exception as ex:
+        raise
 
 
 def _remove_comments(string):
@@ -137,3 +163,14 @@ def _get_last_char(string):
 def _get_first_char(string):
     return string.replace(' ', '').replace('\r\n', '').replace('\n', '')[:1]
 
+
+class IncludeRecursionError(Exception):
+    def __init__(self, origin=None):
+        super().__init__()
+        self._origin = origin
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return "Inclusion Recursion Found in file {0}.".format(self._origin)
