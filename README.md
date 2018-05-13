@@ -214,10 +214,54 @@ The `#INCLUDE <*>` directives are identified in the file and the file name enclo
 #### C Style Comments
 Its simple. Comments are removed in memory before deserialization. This allows the Standard Python JSON parser deserialize the JSON file.
 
+### Unit Testing Requirements:
+exjson unit testing runs on the standard Python unit test library but I included support to generate call graphs from the execution of each test function. Because of this there is an additional dependency on [PyCallGraph](http://pycallgraph.readthedocs.io/en/master/). Please follow the steps below in order to install this dependency on Windows, Linux or OSX.
+Mind you, the steps below assumes you already have python 3.6+ and pip installed. Depending on how your environment is setup Python 3.x pip may have be available through an alias `pip3`. 
+
+#### Ubuntu
+1. Install `Graphviz` and it's development libraries
+```bash
+sudo apt-get install graphviz libgraphviz-dev
+```
+2. Install `pygraphviz`
+```bash
+pip install pygraphviz
+``` 
+4. Install `pycallgraph`.
+```bash
+pip install pycallgraph
+```
+
+Alternatively you can download the [PyGraphviz](https://pypi.org/project/graphviz/#files) wheel file from Pypi.org and installing it as described in steps 4 and 5 for Windows below.
+
+### Windows
+1. Download [Graphviz for windows](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) from the graphiviz site.
+2. Add the Graphviz bin path `C:\Program Files (x86)\Graphviz2.38\bin` in your Windows path.
+3. **Close and reopen your terminals so the path changes is recognized.**
+4. Download the [pygraphviz python 3.6 wheel](https://pypi.org/project/graphviz/#files).
+5. Install the `pygraphviz` wheel.
+  ```bash
+  pip install graphviz-0.8.3-py2.py3-none-any.whl
+  ``` 
+6. Install `pycallgraph`
+```bash
+pip install pycallgraph
+```
+
+### OSX
+1. Install [HomeBrew](https://brew.sh/).
+2. Download the [pygraphviz python 3.6 wheel](https://pypi.org/project/graphviz/#files).
+3. Install the `pygraphviz` wheel.
+```bash
+pip install graphviz-0.8.3-py2.py3-none-any.whl
+``` 
+3. Install `pycallgraph`.
+```bash
+pip install pycallgraph
+```
+
 ### Road Map:
-* More unit tests
-* Value Reference from same or different file. Accessible by JSON property tree.
-* Basic Scripting. Dynamic values support. Example: Date Calculation and formatting.
-* Support serialization to multiple files by using `__exjson_file__ = "filename.json"` property.
-* Benchmarking?
+* Value Reference from same or different file. Accessible by using dot notation on JSON properties tree.
+* Basic Scripting. Dynamic values support. Example: UUID, Enumeration, Date Calculation and formatting.
+* Support serialization to multiple files by using `__exjson_file__ = "filename.json"` property and creation of `#INCLUDE` directives.
 
