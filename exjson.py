@@ -50,6 +50,7 @@ def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=No
     # Drop parent file key before calling native json loads since it is not supported
     if kw is not None and _PARENT_FILE_KEY in kw:
         kw.pop(_PARENT_FILE_KEY, None)
+    json_source = _process_value_calls(json_source)
     return json.loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                       parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
 
@@ -141,6 +142,10 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
     except Exception as ex:
         raise IncludeError(exception=ex)
 
+def _process_value_calls(json_source):
+    # TODO: Implement value update
+    return json_source
+
 
 def _remove_comments(string):
     """Removes all comments"""
@@ -172,8 +177,9 @@ class IncludeRecursionError(Exception):
     def __repr__(self):
         return "Inclusion Recursion Found in file {0}.".format(self._origin)
 
+
 class IncludeError(Exception):
-    def __init__(self, message=None, exception:Exception=None):
+    def __init__(self, message=None, exception: Exception = None):
         super().__init__()
         # TODO: Exception should be added to the stack...
         self._message = ""
@@ -191,4 +197,3 @@ class IncludeError(Exception):
 
     def __repr__(self):
         return "Invalid Included directive. {0}".format(self._message)
-

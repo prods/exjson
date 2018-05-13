@@ -395,6 +395,35 @@ class EXJSONTestScenarios(object):
     def loads_json_without_property_override_raises_an_error(self, json_source):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
+    def loads_json_evaluate_uuid_value(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+            "Name": "Test Name",
+            "Id": ""
+        })
+
+    def loads_json_evaluate_raw_date_value(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+            "Name": "Test Name",
+            "DOB": "2010-04-02T19:20:01+05:00"
+        })
+
+    def loads_json_evaluate_raw_utc_date_value(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+            "Name": "Test Name",
+            "DOB": "2010-04-02T11:20:01Z"
+        })
+
+    def loads_json_evaluate_formatted_date_value(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+            "Name": "Test Name",
+            "DOB": "04/02/2010"
+        })
+
+    def loads_json_evaluate_formatted_date_and_time_value(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+            "Name": "Test Name",
+            "DOB": "04/02/2010 13:20:01"
+        })
 
 class PyXJSONTests(TestCase):
 
@@ -443,14 +472,14 @@ class PyXJSONTests(TestCase):
         with open("./samples/pipeline.stage.001.json", encoding="utf-8") as f:
             json_source = f.read()
         result = tests.generate_call_graph(self._scenarios.loads_json_string_with_comments,
-                                          json_source)
+                                           json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_with_comments_and_included_files(self):
         with open("./samples/pipeline.json", encoding="utf-8") as f:
             json_source = f.read()
         result = tests.generate_call_graph(self._scenarios.loads_json_with_comments_and_included_files,
-                                          json_source)
+                                           json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_in_different_positions_and_using_properties_overrides(self):
@@ -473,7 +502,6 @@ class PyXJSONTests(TestCase):
             # 2nd Element on line 3 is invalid (missing property name)
             self.assertTrue("line 3" in str(ex))
 
-
     def test_loads_json_includes_followed_by_comment_before_EOF(self):
         json_source = """{
             // This tests that the include ignores comments
@@ -493,7 +521,6 @@ class PyXJSONTests(TestCase):
             self._scenarios.loads_json_includes_followed_by_comment_before_EOF, json_source)
         self.assertDictEqual(result[0], result[1])
 
-
     def test_loads_json_missing_include_raises_an_error(self):
         result = None
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
@@ -504,7 +531,6 @@ class PyXJSONTests(TestCase):
             except Exception as ex:
                 result = ex
         self.assertIsNotNone(result)
-
 
     def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
@@ -517,13 +543,11 @@ class PyXJSONTests(TestCase):
                 self.fail(ex)
         self.assertDictEqual(result[0], result[1])
 
-
     # Multi-Level Include
 
     def test_loads_json_with_multi_level_include(self):
         result = tests.generate_call_graph(self._scenarios.loads_json_with_multi_level_include)
         self.assertDictEqual(result[0], result[1])
-
 
     def test_loads_json_with_multiple_level_recursion_detection(self):
         try:
@@ -532,3 +556,50 @@ class PyXJSONTests(TestCase):
             self.fail()
         except exjson.IncludeRecursionError as ex:
             self.assertTrue("multi-level-include-recursive-first.json" in str(ex))
+
+    # Dynamic and Reference Value Evaluation
+
+    def test_loads_json_evaluate_uuid_value(self):
+        json_source = """{
+            "Name": "Test Name",
+            "DOB": "04/02/2010 19:20:01+05:00:00"
+        }"""
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_uuid_value, json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_evaluate_raw_date_value(self):
+        json_source = """{
+            "Name": "Test Name",
+            "DOB": "04/02/2010 19:20:01+05:00:00"
+        }"""
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_evaluate_raw_utc_date_value(self):
+        json_source = """{
+            "Name": "Test Name",
+            "DOB": "04/02/2010 19:20:01+05:00:00"
+        }"""
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_utc_date_value)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_evaluate_formatted_date_value(self):
+        json_source = """{
+            "Name": "Test Name",
+            "DOB": "04/02/2010 19:20:01+05:00:00"
+        }"""
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_formatted_date_value)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_evaluate_formatted_date_and_time_value(self):
+        json_source = """{
+            "Name": "Test Name",
+            "DOB": "04/02/2010 19:20:01+05:00:00"
+        }"""
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_formatted_date_and_time_value)
+        self.assertDictEqual(result[0], result[1])
