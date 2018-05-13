@@ -1,18 +1,19 @@
+from os import path
 from unittest import TestCase
 
+from tests.tools import generate_call_graph
 import exjson
 
-__author__ = 'Pedro Rodriguez'
+__author__ = 'prods'
 __project__ = 'xjson'
 
+# Controls wherever call graphs will be generated from unit-test calls. Not Implemented Yet.
+GENERATE_CALL_GRAPHS = True
 
-class PyXJSONTests(TestCase):
 
-    # Load: Load JSON from file
-
-    def test_load_simple_json(self):
-        simple_json = exjson.load("./samples/clean-simple.json")
-        self.assertDictEqual(simple_json, {
+class EXJSONTestScenarios(object):
+    def load_simple_json(self):
+        return (exjson.load("./samples/clean-simple.json"), {
             "Name": "Sample Values",
             "Enabled": True,
             "Values": [
@@ -23,9 +24,8 @@ class PyXJSONTests(TestCase):
             "Count": 3
         })
 
-    def test_load_json_with_comments(self):
-        simple_json = exjson.load("./samples/pipeline.stage.001.json", encoding='utf-8')
-        self.assertDictEqual(simple_json, {
+    def load_json_with_comments(self):
+        return (exjson.load("./samples/pipeline.stage.001.json", encoding='utf-8'), {
             "Name": "First Stage",
             "Description": "Retrieves Sample Data from file",
             "Sequence_Id": 1,
@@ -48,9 +48,8 @@ class PyXJSONTests(TestCase):
             "Enabled": True
         })
 
-    def test_load_json_with_comments_and_included_files(self):
-        simple_json = exjson.load("./samples/pipeline.json", encoding='utf-8')
-        self.assertDictEqual(simple_json, {
+    def load_json_with_comments_and_included_files(self):
+        return (exjson.load("./samples/pipeline.json", encoding='utf-8'), {
             "Name": "Sample Pipeline",
             "Description": "This is a sample Pipeline",
             "Sequence_Id": 0,
@@ -122,9 +121,8 @@ class PyXJSONTests(TestCase):
             "Enabled": True
         })
 
-    def test_load_json_in_different_positions(self):
-        json_content = exjson.load("./samples/multi-include.json", encoding='utf-8')
-        self.assertDictEqual(json_content, {
+    def load_json_in_different_positions(self):
+        return (exjson.load("./samples/multi-include.json", encoding='utf-8'), {
             "Name": "Test Name",
             "Values": [
                 {
@@ -147,13 +145,8 @@ class PyXJSONTests(TestCase):
             }
         })
 
-    # Load: Load JSON from string
-
-    def test_loads_simple_json_string(self):
-        with open("./samples/clean-simple.json", encoding="utf-8") as f:
-            json_source = f.read()
-        simple_json = exjson.loads(json_source, encoding='utf-8')
-        self.assertDictEqual(simple_json, {
+    def loads_simple_json_string(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8'), {
             "Name": "Sample Values",
             "Enabled": True,
             "Values": [
@@ -164,15 +157,8 @@ class PyXJSONTests(TestCase):
             "Count": 3
         })
 
-    def test_loads_with_includes_and_no_provided_includes_path(self):
-        json_source = """{
-        "Name": "Test",
-        // #INCLUDE <Value:tests/samples/loads-include-test.json>
-        "Enabled": true
-        }
-        """
-        simple_json = exjson.loads(json_source, encoding='utf-8')
-        self.assertDictEqual(simple_json, {
+    def loads_with_includes_and_no_provided_includes_path(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8'), {
             "Name": "Test",
             "Value": {
                 "Name": "Sample Values",
@@ -187,11 +173,8 @@ class PyXJSONTests(TestCase):
             "Enabled": True
         })
 
-    def test_loads_json_string_with_comments(self):
-        with open("./samples/pipeline.stage.001.json", encoding="utf-8") as f:
-            json_source = f.read()
-        simple_json = exjson.loads(json_source, encoding='utf-8')
-        self.assertDictEqual(simple_json, {
+    def loads_json_string_with_comments(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8'), {
             "Name": "First Stage",
             "Description": "Retrieves Sample Data from file",
             "Sequence_Id": 1,
@@ -214,11 +197,8 @@ class PyXJSONTests(TestCase):
             "Enabled": True
         })
 
-    def test_loads_json_with_comments_and_included_files(self):
-        with open("./samples/pipeline.json", encoding="utf-8") as f:
-            json_source = f.read()
-        simple_json = exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
-        self.assertDictEqual(simple_json, {
+    def loads_json_with_comments_and_included_files(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
             "Name": "Sample Pipeline",
             "Description": "This is a sample Pipeline",
             "Sequence_Id": 0,
@@ -290,11 +270,8 @@ class PyXJSONTests(TestCase):
             "Enabled": True
         })
 
-    def test_loads_json_in_different_positions(self):
-        with open("./samples/multi-include.json", encoding="utf-8") as f:
-            json_source = f.read()
-        json_content = exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
-        self.assertDictEqual(json_content, {
+    def loads_json_in_different_positions(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
             "Name": "Test Name",
             "Values": [
                 {
@@ -317,23 +294,8 @@ class PyXJSONTests(TestCase):
             }
         })
 
-    def test_loads_json_includes_followed_by_comment_before_EOF(self):
-        json_source = """{
-        // This tests that the include ignores comments
-        /* #INCLUDE <Test1:tests/samples/loads-include-test.json> */
-        "Name": "Test",
-        "Test": [
-            /* #INCLUDE <tests/samples/loads-include-test.json> */
-        ],
-        "Enabled": true
-        // #INCLUDE <Value:tests/samples/loads-include-test.json>
-        /*
-        No more properties beyond here...
-        */
-        }
-        """
-        simple_json = exjson.loads(json_source, encoding='utf-8')
-        self.assertDictEqual(simple_json, {
+    def loads_json_includes_followed_by_comment_before_EOF(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8'), {
             "Name": "Test",
             "Enabled": True,
             "Test1": {
@@ -370,50 +332,33 @@ class PyXJSONTests(TestCase):
             }
         })
 
-    def test_loads_json_missing_include_raises_an_error(self):
-        result = None
-        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
-            json_source = f.read()
-            try:
-                json_content = exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
-                                            error_on_include_file_not_found=True)
-            except Exception as ex:
-                result = ex
-        self.assertIsNotNone(result)
+    def loads_json_missing_include_raises_an_error(self, json_source):
+        return exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
+                            error_on_include_file_not_found=True)
 
-    def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
-        result = None
-        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
-            json_source = f.read()
-            try:
-                json_content = exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
-                                            error_on_include_file_not_found=False)
-            except Exception as ex:
-                self.fail(ex)
-        self.assertDictEqual(json_content, {
-            "Name": "Test Name",
-            "Values": [
-                {
-                    "Value_id": "FFEB4A18FF1C37E59290C86B92DF28F65DB584D9",
-                    "Value": "test message"
-                }
-            ],
-            "Other1": {
-                "Value_id": "512D4C2E2A63AC8C385A1E2315ABCF4B3D5C7A9F",
-                "Value": "test message 2"
-            },
-            "Other2": "Test Value",
-            "Other3": {
-                "Value_id": "4034A54700430B6A37E56B5C38070F6B1F333B7B",
-                "Value": "test message 2"
-            }
-        })
+    def loads_json_missing_include_does_not_raise_error_if_specified(self, json_source):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
+                             error_on_include_file_not_found=False), {
+                    "Name": "Test Name",
+                    "Values": [
+                        {
+                            "Value_id": "FFEB4A18FF1C37E59290C86B92DF28F65DB584D9",
+                            "Value": "test message"
+                        }
+                    ],
+                    "Other1": {
+                        "Value_id": "512D4C2E2A63AC8C385A1E2315ABCF4B3D5C7A9F",
+                        "Value": "test message 2"
+                    },
+                    "Other2": "Test Value",
+                    "Other3": {
+                        "Value_id": "4034A54700430B6A37E56B5C38070F6B1F333B7B",
+                        "Value": "test message 2"
+                    }
+                })
 
-    # Multi-Level Include
-
-    def test_loads_json_with_four_level_include(self):
-        simple_json = exjson.load("./samples/multi-level-include/multi-level-include-main.json", encoding='utf-8')
-        self.assertDictEqual(simple_json, {
+    def loads_json_with_multi_level_include(self):
+        return (exjson.load("./samples/multi-level-include/multi-level-include-main.json", encoding='utf-8'), {
             "Name": "Test",
             "Value": "30l2l3l2l3l2--3lo",
             "Level1": {
@@ -442,9 +387,126 @@ class PyXJSONTests(TestCase):
             }
         })
 
+    def loads_json_with_multiple_level_recursion_detection(self):
+        return exjson.load("./samples/multi-level-include/multi-level-include-recursive-first.json",
+                           encoding='utf-8')
+
+
+class PyXJSONTests(TestCase):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._scenarios = EXJSONTestScenarios()
+        self._call_graph_path = path.abspath(".")
+
+    # Load: Load JSON from file
+
+    def test_load_simple_json(self):
+        result = generate_call_graph(self._call_graph_path, self._scenarios.load_simple_json)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_load_json_with_comments(self):
+        result = generate_call_graph(self._call_graph_path, self._scenarios.load_json_with_comments)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_load_json_with_comments_and_included_files(self):
+        result = generate_call_graph(self._call_graph_path, self._scenarios.load_json_with_comments_and_included_files)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_load_json_in_different_positions(self):
+        result = generate_call_graph(self._call_graph_path, self._scenarios.load_json_in_different_positions)
+        self.assertDictEqual(result[0], result[1])
+
+    # Load: Load JSON from string
+
+    def test_loads_simple_json_string(self):
+        with open("./samples/clean-simple.json", encoding="utf-8") as f:
+            json_source = f.read()
+        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_simple_json_string, json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_with_includes_and_no_provided_includes_path(self):
+        json_source = """{
+        "Name": "Test",
+        // #INCLUDE <Value:tests/samples/loads-include-test.json>
+        "Enabled": true
+        }
+        """
+        result = generate_call_graph(self._call_graph_path,
+                                     self._scenarios.loads_with_includes_and_no_provided_includes_path, json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_string_with_comments(self):
+        with open("./samples/pipeline.stage.001.json", encoding="utf-8") as f:
+            json_source = f.read()
+        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_string_with_comments,
+                                     json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_with_comments_and_included_files(self):
+        with open("./samples/pipeline.json", encoding="utf-8") as f:
+            json_source = f.read()
+        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_with_comments_and_included_files,
+                                     json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_in_different_positions(self):
+        with open("./samples/multi-include.json", encoding="utf-8") as f:
+            json_source = f.read()
+        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_in_different_positions,
+                                     json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_includes_followed_by_comment_before_EOF(self):
+        json_source = """{
+        // This tests that the include ignores comments
+        /* #INCLUDE <Test1:tests/samples/loads-include-test.json> */
+        "Name": "Test",
+        "Test": [
+            /* #INCLUDE <tests/samples/loads-include-test.json> */
+        ],
+        "Enabled": true
+        // #INCLUDE <Value:tests/samples/loads-include-test.json>
+        /*
+        No more properties beyond here...
+        */
+        }
+        """
+        result = generate_call_graph(self._call_graph_path,
+                                     self._scenarios.loads_json_includes_followed_by_comment_before_EOF, json_source)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_missing_include_raises_an_error(self):
+        result = None
+        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+            json_source = f.read()
+            try:
+                result = generate_call_graph(self._call_graph_path,
+                                             self._scenarios.loads_json_missing_include_raises_an_error, json_source)
+            except Exception as ex:
+                result = ex
+        self.assertIsNotNone(result)
+
+    def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
+        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+            json_source = f.read()
+            try:
+                result = generate_call_graph(self._call_graph_path,
+                                             self._scenarios.loads_json_missing_include_does_not_raise_error_if_specified,
+                                             json_source)
+            except Exception as ex:
+                self.fail(ex)
+        self.assertDictEqual(result[0], result[1])
+
+    # Multi-Level Include
+
+    def test_loads_json_with_multi_level_include(self):
+        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_with_multi_level_include)
+        self.assertDictEqual(result[0], result[1])
+
     def test_loads_json_with_multiple_level_recursion_detection(self):
         try:
-            simple_json = exjson.load("./samples/multi-level-include/multi-level-include-recursive-first.json", encoding='utf-8')
+            result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_with_multiple_level_recursion_detection)
             self.fail()
         except exjson.IncludeRecursionError as ex:
             self.assertTrue("multi-level-include-recursive-first.json" in str(ex))
