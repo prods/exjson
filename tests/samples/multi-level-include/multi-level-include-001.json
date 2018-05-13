@@ -1,0 +1,5 @@
+{
+  "Name": "Test 1",
+  "Value1": "1"
+  /* #INCLUDE <Level2:multi-level-include-002.json> */
+}

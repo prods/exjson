@@ -1,0 +1,5 @@
+{
+  "Name": "Test 4 Recursive",
+  "Value1": "4"
+  /* #INCLUDE <Level2:multi-level-include-recursive-second.json> */
+}
