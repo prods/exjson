@@ -107,5 +107,6 @@ venv.bak/
 
 .idea
 
+tests/calls/*.png
 tests/*.png
 

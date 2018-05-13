@@ -1,0 +1,5 @@
+{
+  "Name": "Test 1",
+  /* #INCLUDE <clean-simple.json> */
+  "Value": "Test 2"
+}
