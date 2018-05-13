@@ -264,4 +264,4 @@ pip install pycallgraph
 * Value Reference from same or different file. Accessible by using dot notation on JSON properties tree.
 * Basic Scripting. Dynamic values support. Example: UUID, Enumeration, Date Calculation and formatting.
 * Support serialization to multiple files by using `__exjson_file__ = "filename.json"` property and creation of `#INCLUDE` directives.
-
+* Support for class `docstring` comments usage as json comments during serialization.
