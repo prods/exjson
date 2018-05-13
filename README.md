@@ -214,9 +214,9 @@ The `#INCLUDE <*>` directives are identified in the file and the file name enclo
 #### C Style Comments
 Its simple. Comments are removed in memory before deserialization. This allows the Standard Python JSON parser deserialize the JSON file.
 
-### Unit Testing Requirements:
-exjson unit testing runs on the standard Python unit test library but I included support to generate call graphs from the execution of each test function. Because of this there is an additional dependency on [PyCallGraph](http://pycallgraph.readthedocs.io/en/master/). Please follow the steps below in order to install this dependency on Windows, Linux or OSX.
-Mind you, the steps below assumes you already have python 3.6+ and pip installed. Depending on how your environment is setup Python 3.x pip may have be available through an alias `pip3`. 
+### Unit Test Requirements:
+EXJSON unit testing runs on the [standard Python unit test library](https://docs.python.org/2/library/unittest.html). But I EXJSON unit test functions support automatic-generation of call diagrams from each test function execution. Because of this there is an additional dependency on [PyCallGraph](http://pycallgraph.readthedocs.io/en/master/). Please follow the steps below in order to install this dependency on Windows, Linux or OSX.
+Please bear in mind that the steps below assume you already have python 3.6+ and pip installed. Depending on how your environment is setup Python 3.x `pip` may be available through an alias named `pip3`.
 
 #### Ubuntu
 1. Install `Graphviz` and it's development libraries
@@ -255,7 +255,7 @@ pip install pycallgraph
 ```bash
 pip install graphviz-0.8.3-py2.py3-none-any.whl
 ``` 
-3. Install `pycallgraph`.
+4. Install `pycallgraph`.
 ```bash
 pip install pycallgraph
 ```
