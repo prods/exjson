@@ -1,9 +1,4 @@
-import uuid
-
-try:
-    import cjson as json
-except ImportError:
-    import json
+import json
 import os
 import re
 
@@ -139,10 +134,12 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                         included_source = included_source + ','
             string = string.replace(include_call_string, included_source)
         return string
-    except IncludeRecursionError as ex:
+    except IncludeError:
+        raise
+    except IncludeRecursionError:
         raise
     except Exception as ex:
-        raise
+        raise IncludeError(exception=ex)
 
 
 def _remove_comments(string):
@@ -174,3 +171,24 @@ class IncludeRecursionError(Exception):
 
     def __repr__(self):
         return "Inclusion Recursion Found in file {0}.".format(self._origin)
+
+class IncludeError(Exception):
+    def __init__(self, message=None, exception:Exception=None):
+        super().__init__()
+        # TODO: Exception should be added to the stack...
+        self._message = ""
+        if message is not None:
+            self._message = message
+        if exception is not None:
+            self._message = str(exception)
+            self.args = exception.args
+            self.__context__ = exception.__context__
+            self.__traceback__ = exception.__traceback__
+            self.__cause__ = exception.__cause__
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return "Invalid Included directive. {0}".format(self._message)
+

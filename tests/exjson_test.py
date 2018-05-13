@@ -1,14 +1,15 @@
+import errno
+import json
+import os
 from os import path
 from unittest import TestCase
 
-from tests.tools import generate_call_graph
+import tests
+from tests import tools, GENERATE_CALL_GRAPHS, CALL_GRAPHS_PATH
 import exjson
 
 __author__ = 'prods'
 __project__ = 'xjson'
-
-# Controls wherever call graphs will be generated from unit-test calls. Not Implemented Yet.
-GENERATE_CALL_GRAPHS = True
 
 
 class EXJSONTestScenarios(object):
@@ -270,7 +271,7 @@ class EXJSONTestScenarios(object):
             "Enabled": True
         })
 
-    def loads_json_in_different_positions(self, json_source):
+    def test_loads_json_in_different_positions_and_using_properties_overrides(self, json_source):
         return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
             "Name": "Test Name",
             "Values": [
@@ -391,30 +392,32 @@ class EXJSONTestScenarios(object):
         return exjson.load("./samples/multi-level-include/multi-level-include-recursive-first.json",
                            encoding='utf-8')
 
+    def loads_json_without_property_override_raises_an_error(self, json_source):
+        return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
+
 
 class PyXJSONTests(TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._scenarios = EXJSONTestScenarios()
-        self._call_graph_path = path.abspath(".")
 
     # Load: Load JSON from file
 
     def test_load_simple_json(self):
-        result = generate_call_graph(self._call_graph_path, self._scenarios.load_simple_json)
+        result = tests.generate_call_graph(self._scenarios.load_simple_json)
         self.assertDictEqual(result[0], result[1])
 
     def test_load_json_with_comments(self):
-        result = generate_call_graph(self._call_graph_path, self._scenarios.load_json_with_comments)
+        result = tests.generate_call_graph(self._scenarios.load_json_with_comments)
         self.assertDictEqual(result[0], result[1])
 
     def test_load_json_with_comments_and_included_files(self):
-        result = generate_call_graph(self._call_graph_path, self._scenarios.load_json_with_comments_and_included_files)
+        result = tests.generate_call_graph(self._scenarios.load_json_with_comments_and_included_files)
         self.assertDictEqual(result[0], result[1])
 
     def test_load_json_in_different_positions(self):
-        result = generate_call_graph(self._call_graph_path, self._scenarios.load_json_in_different_positions)
+        result = tests.generate_call_graph(self._scenarios.load_json_in_different_positions)
         self.assertDictEqual(result[0], result[1])
 
     # Load: Load JSON from string
@@ -422,7 +425,7 @@ class PyXJSONTests(TestCase):
     def test_loads_simple_json_string(self):
         with open("./samples/clean-simple.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_simple_json_string, json_source)
+        result = tests.generate_call_graph(self._scenarios.loads_simple_json_string, json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_with_includes_and_no_provided_includes_path(self):
@@ -432,81 +435,100 @@ class PyXJSONTests(TestCase):
         "Enabled": true
         }
         """
-        result = generate_call_graph(self._call_graph_path,
-                                     self._scenarios.loads_with_includes_and_no_provided_includes_path, json_source)
+        result = tests.generate_call_graph(
+            self._scenarios.loads_with_includes_and_no_provided_includes_path, json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_string_with_comments(self):
         with open("./samples/pipeline.stage.001.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_string_with_comments,
-                                     json_source)
+        result = tests.generate_call_graph(self._scenarios.loads_json_string_with_comments,
+                                          json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_with_comments_and_included_files(self):
         with open("./samples/pipeline.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_with_comments_and_included_files,
-                                     json_source)
+        result = tests.generate_call_graph(self._scenarios.loads_json_with_comments_and_included_files,
+                                          json_source)
         self.assertDictEqual(result[0], result[1])
 
-    def test_loads_json_in_different_positions(self):
+    def test_loads_json_in_different_positions_and_using_properties_overrides(self):
         with open("./samples/multi-include.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_in_different_positions,
-                                     json_source)
+        result = tests.generate_call_graph(
+            self._scenarios.test_loads_json_in_different_positions_and_using_properties_overrides,
+            json_source)
         self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_without_property_override_raises_an_error(self):
+        with open("./samples/include-without-property.json", encoding='utf-8') as f:
+            json_source = f.read()
+        try:
+            result = tests.generate_call_graph(
+                self._scenarios.loads_json_without_property_override_raises_an_error,
+                json_source)
+            self.fail()
+        except json.decoder.JSONDecodeError as ex:
+            # 2nd Element on line 3 is invalid (missing property name)
+            self.assertTrue("line 3" in str(ex))
+
 
     def test_loads_json_includes_followed_by_comment_before_EOF(self):
         json_source = """{
-        // This tests that the include ignores comments
-        /* #INCLUDE <Test1:tests/samples/loads-include-test.json> */
-        "Name": "Test",
-        "Test": [
-            /* #INCLUDE <tests/samples/loads-include-test.json> */
-        ],
-        "Enabled": true
-        // #INCLUDE <Value:tests/samples/loads-include-test.json>
-        /*
-        No more properties beyond here...
-        */
-        }
-        """
-        result = generate_call_graph(self._call_graph_path,
-                                     self._scenarios.loads_json_includes_followed_by_comment_before_EOF, json_source)
+            // This tests that the include ignores comments
+            /* #INCLUDE <Test1:tests/samples/loads-include-test.json> */
+            "Name": "Test",
+            "Test": [
+                /* #INCLUDE <tests/samples/loads-include-test.json> */
+            ],
+            "Enabled": true
+            // #INCLUDE <Value:tests/samples/loads-include-test.json>
+            /*
+            No more properties beyond here...
+            */
+            }
+            """
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_includes_followed_by_comment_before_EOF, json_source)
         self.assertDictEqual(result[0], result[1])
+
 
     def test_loads_json_missing_include_raises_an_error(self):
         result = None
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
             json_source = f.read()
             try:
-                result = generate_call_graph(self._call_graph_path,
-                                             self._scenarios.loads_json_missing_include_raises_an_error, json_source)
+                result = tests.generate_call_graph(
+                    self._scenarios.loads_json_missing_include_raises_an_error, json_source)
             except Exception as ex:
                 result = ex
         self.assertIsNotNone(result)
+
 
     def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
             json_source = f.read()
             try:
-                result = generate_call_graph(self._call_graph_path,
-                                             self._scenarios.loads_json_missing_include_does_not_raise_error_if_specified,
-                                             json_source)
+                result = tests.generate_call_graph(
+                    self._scenarios.loads_json_missing_include_does_not_raise_error_if_specified,
+                    json_source)
             except Exception as ex:
                 self.fail(ex)
         self.assertDictEqual(result[0], result[1])
 
+
     # Multi-Level Include
 
     def test_loads_json_with_multi_level_include(self):
-        result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_with_multi_level_include)
+        result = tests.generate_call_graph(self._scenarios.loads_json_with_multi_level_include)
         self.assertDictEqual(result[0], result[1])
+
 
     def test_loads_json_with_multiple_level_recursion_detection(self):
         try:
-            result = generate_call_graph(self._call_graph_path, self._scenarios.loads_json_with_multiple_level_recursion_detection)
+            result = tests.generate_call_graph(
+                self._scenarios.loads_json_with_multiple_level_recursion_detection)
             self.fail()
         except exjson.IncludeRecursionError as ex:
             self.assertTrue("multi-level-include-recursive-first.json" in str(ex))
