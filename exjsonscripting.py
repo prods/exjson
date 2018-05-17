@@ -98,6 +98,8 @@ _functions = {
 }
 
 def parse(source, raise_error_on_invalid_value=False):
+    if "$." not in source:
+        return source
     calls = {}
     updated_source = source
     for line in source.splitlines():

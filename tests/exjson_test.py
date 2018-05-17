@@ -416,7 +416,7 @@ class EXJSONTestScenarios(object):
     #         ]
     #     })
 
-    def loads_json_evaluate_hashes_value(self, json_source):
+    def loads_json_evaluate_hashes_value(self, json_source, hash_id = None):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
     def loads_json_evaluate_raw_date_value(self, json_source):
@@ -563,14 +563,35 @@ class PyXJSONTests(TestCase):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_hashes_value, """{
             "hash": "$.uuid()"
-            }""")
-        self.assertIsNotNone(result["hash"])
+            }""", "uuid")
+        self.assertIsNotNone(result["hash"], "uuid")
 
     def test_loads_json_evaluate_md5_value(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_hashes_value, """{
             "hash": "$.md5()"
-            }""")
+            }""", "md5")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_sha1_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_hashes_value, """{
+             "hash": "$.sha1()"
+             }""", "sha1")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_sha256_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_hashes_value, """{
+             "hash": "$.sha256()"
+             }""", "sha256")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_sha512_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_hashes_value, """{
+             "hash": "$.sha512()"
+             }""", "sha512")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_raw_date_value(self):
