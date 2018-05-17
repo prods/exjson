@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from exjsonscripting import parse
 
 _JSON_OPENING_CHARS = [',', '[', '{', ':']
 _JSON_CLOSING_CHARS = [',', '}', ']']
@@ -10,10 +11,13 @@ _INCLUDE_DIRECTIVE = re.compile(
     re.IGNORECASE | re.MULTILINE)
 _PARENT_FILE_KEY = "parent_file"
 _PARENT_FILE_STRING_SRC = "__string__"
+_DYN_REF_VALUE_CALL = re.compile(r'\$\.(.*?)\(\)|\$\.(.*?)\ |\$\.(.*?)[\"\']|this\.(.*?)[\"\']|this\.(.*?)\ ',
+                                 re.IGNORECASE | re.MULTILINE)
 
 
 def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
-         parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, **kw):
+         parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False,
+         error_on_invalid_value=False, **kw):
     """Decodes a JSON source file into a dictionary"""
     file_full_path = os.path.abspath(json_file_path)
     file_path = os.path.dirname(file_full_path)
@@ -25,12 +29,13 @@ def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=
     kw[_PARENT_FILE_KEY] = file_full_path
     return loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                  parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook,
-                 error_on_include_file_not_found=error_on_include_file_not_found, includes_path=file_path, **kw)
+                 error_on_include_file_not_found=error_on_include_file_not_found,
+                 error_on_invalid_value=error_on_invalid_value, includes_path=file_path, **kw)
 
 
 def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=None,
           parse_int=None, parse_constant=None, object_pairs_hook=None,
-          error_on_include_file_not_found=False, includes_path=None, **kw):
+          error_on_include_file_not_found=False, error_on_invalid_value=False, includes_path=None, **kw):
     """Decodes a provided JSON source string into a dictionary"""
     _json_includes_cache = {}
     if json_string is None or json_string.strip(' ') == '':
@@ -50,7 +55,7 @@ def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=No
     # Drop parent file key before calling native json loads since it is not supported
     if kw is not None and _PARENT_FILE_KEY in kw:
         kw.pop(_PARENT_FILE_KEY, None)
-    json_source = _process_value_calls(json_source)
+    json_source = parse(json_source, error_on_invalid_value)
     return json.loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                       parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
 
@@ -142,8 +147,20 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
     except Exception as ex:
         raise IncludeError(exception=ex)
 
-def _process_value_calls(json_source):
-    # TODO: Implement value update
+
+def _process_value_calls(json_source, error_on_invalid_value=False):
+    cached_values = {}
+    if not ("$." in json_source or "this." in json_source):
+        return json_source
+    # Process ref or dyn value calls
+    dyn_ref_calls = re.finditer(_DYN_REF_VALUE_CALL, json_source)
+    # Files Cache 
+    for match_num, match in enumerate(dyn_ref_calls):
+        if len(match.groups()) > 0:
+            for value in match.groups():
+                if value is None:
+                    continue
+                print(value)
     return json_source
 
 

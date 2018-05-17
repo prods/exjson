@@ -1,8 +1,8 @@
-import errno
 import json
-import os
-from os import path
+import re
+from datetime import datetime
 from unittest import TestCase
+from dateutil.tz import tzlocal
 
 import tests
 from tests import tools, GENERATE_CALL_GRAPHS, CALL_GRAPHS_PATH
@@ -395,35 +395,35 @@ class EXJSONTestScenarios(object):
     def loads_json_without_property_override_raises_an_error(self, json_source):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
-    def loads_json_evaluate_uuid_value(self, json_source):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
-            "Name": "Test Name",
-            "Id": ""
-        })
+    # def loads_json_evaluate_uuid_value(self):
+    #     return (exjson.load("./samples/dynamic-ref-values.json", encoding='utf-8'), {
+    #         "Name": "Value Test",
+    #         "Id": "$.uuid()",
+    #         "Values": [{
+    #             "N": "$.sequence.next()",
+    #             "Name": "$.Name",
+    #             "ParentId": "$.Id",
+    #             "Id": "$.uuid()",
+    #             "Description": "this.name is a child object"
+    #         },
+    #             {
+    #                 "N": "$.sequence.next()",
+    #                 "Name": "$.Name",
+    #                 "ParentId": "$.Id",
+    #                 "Id": "$.uuid()",
+    #                 "Description": "this.name is a child object"
+    #             }
+    #         ]
+    #     })
+
+    def loads_json_evaluate_hashes_value(self, json_source):
+        return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
     def loads_json_evaluate_raw_date_value(self, json_source):
         return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
-            "Name": "Test Name",
-            "DOB": "2010-04-02T19:20:01+05:00"
+            "date": datetime.now(tzlocal()).isoformat()
         })
 
-    def loads_json_evaluate_raw_utc_date_value(self, json_source):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
-            "Name": "Test Name",
-            "DOB": "2010-04-02T11:20:01Z"
-        })
-
-    def loads_json_evaluate_formatted_date_value(self, json_source):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
-            "Name": "Test Name",
-            "DOB": "04/02/2010"
-        })
-
-    def loads_json_evaluate_formatted_date_and_time_value(self, json_source):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
-            "Name": "Test Name",
-            "DOB": "04/02/2010 13:20:01"
-        })
 
 class PyXJSONTests(TestCase):
 
@@ -560,46 +560,46 @@ class PyXJSONTests(TestCase):
     # Dynamic and Reference Value Evaluation
 
     def test_loads_json_evaluate_uuid_value(self):
-        json_source = """{
-            "Name": "Test Name",
-            "DOB": "04/02/2010 19:20:01+05:00:00"
-        }"""
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_uuid_value, json_source)
-        self.assertDictEqual(result[0], result[1])
+            self._scenarios.loads_json_evaluate_hashes_value, """{
+            "hash": "$.uuid()"
+            }""")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_md5_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_hashes_value, """{
+            "hash": "$.md5()"
+            }""")
+        self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_raw_date_value(self):
-        json_source = """{
-            "Name": "Test Name",
-            "DOB": "04/02/2010 19:20:01+05:00:00"
-        }"""
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_raw_date_value, json_source)
-        self.assertDictEqual(result[0], result[1])
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now()"
+            }""")
+        iso8601 = re.compile(
+            r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
+        result_format_match = iso8601.match(result[0]["date"])
+        self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
+                        result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
+                        result_format_match["day"] == str(datetime.now().day).rjust(2, '0') and
+                        result_format_match["hour"] == str(datetime.now().hour).rjust(2, '0') and
+                        result_format_match["min"] == str(datetime.now().minute).rjust(2, '0') and
+                        result_format_match["sec"] is not None)
 
-    def test_loads_json_evaluate_raw_utc_date_value(self):
-        json_source = """{
-            "Name": "Test Name",
-            "DOB": "04/02/2010 19:20:01+05:00:00"
-        }"""
-        result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_raw_utc_date_value)
-        self.assertDictEqual(result[0], result[1])
+    # def test_loads_json_evaluate_raw_utc_date_value(self):
+    #     result = tests.generate_call_graph(
+    #         self._scenarios.loads_json_evaluate_raw_utc_date_value)
+    #     self.assertDictEqual(result[0], result[1])
+    #
+    # def test_loads_json_evaluate_formatted_date_value(self):
+    #     result = tests.generate_call_graph(
+    #         self._scenarios.loads_json_evaluate_formatted_date_value)
+    #     self.assertDictEqual(result[0], result[1])
+    #
+    # def test_loads_json_evaluate_formatted_date_and_time_value(self):
+    #     result = tests.generate_call_graph(
+    #         self._scenarios.loads_json_evaluate_formatted_date_and_time_value)
+    #     self.assertDictEqual(result[0], result[1])
 
-    def test_loads_json_evaluate_formatted_date_value(self):
-        json_source = """{
-            "Name": "Test Name",
-            "DOB": "04/02/2010 19:20:01+05:00:00"
-        }"""
-        result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_formatted_date_value)
-        self.assertDictEqual(result[0], result[1])
-
-    def test_loads_json_evaluate_formatted_date_and_time_value(self):
-        json_source = """{
-            "Name": "Test Name",
-            "DOB": "04/02/2010 19:20:01+05:00:00"
-        }"""
-        result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_formatted_date_and_time_value)
-        self.assertDictEqual(result[0], result[1])

@@ -1,0 +1,30 @@
+{
+	"Name": "Value Test",
+	"Id": "$.uuid()",
+	"Dates": {
+		"Now": "$.now()",
+		"NowUTC": "$.now().utc()",
+		"Today": "$.today()",
+		"FormattedNow": "$.now(MMddyyyy hh:mm:ss pp)",
+		"FormattedToday": "$.now(MMddyyyy)",
+		"FormattedNowUTC": "$.now().utc(MMddyyyy hh:mm:ss:pp)",
+		"AddWeek": "$.today().add(week, 1)",
+		"AddMonth": "$.today().add(month, 1)",
+		"AddYear": "$.today().add(year, 1)"
+	},
+	"Values": [{
+			"N": "$.sequence.next()",
+			"Name": "$.Name",
+			"ParentId": "$.Id",
+			"Id": "$.uuid()",
+			"Description": "this.name is a child object"
+		},
+		{
+			"N": "$.sequence.next()",
+			"Name": "$.Name",
+			"ParentId": "$.Id",
+			"Id": "$.uuid()",
+			"Description": "this.name is a child object"
+		}
+	]
+    }
