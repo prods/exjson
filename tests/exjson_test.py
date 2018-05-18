@@ -556,7 +556,7 @@ class PyXJSONTests(TestCase):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_hashes_value, """{
                "hash": "$.md5('test string')"
-               }""", "md5")
+               }""", "md5_of_string_value")
         self.assertTrue(result["hash"] == '6f8db599de986fab7a21625b7916589c')
 
     def test_loads_json_evaluate_sha1_value(self):

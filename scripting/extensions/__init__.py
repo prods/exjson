@@ -32,8 +32,9 @@ def get_function(func_call):
 def remove_quotation(value):
     """Removes quotes from string value"""
     result = value
-    if value.startswith("\'") or value.startswith("\""):
-        result = result[1:]
-    if value.endswith("\'") or value.endswith("\""):
-        result = result[:-1]
+    if value.strip(' ') != "":
+        if value[0] == "\'" or value[0] == "\"":
+            result = result[1:]
+        if value[-1] == "\'" or value[-1] == "\"":
+            result = result[:-1]
     return result
