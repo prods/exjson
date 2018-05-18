@@ -18,6 +18,16 @@ _functions = {
 
 def get_function(func_call):
     fn_key = func_call[:func_call.rfind('('):]
-    fn_parameters = func_call[func_call.rfind('(') + 1:func_call.rfind(')')]
+    fn_parameters_str = func_call[func_call.rfind('(') + 1:func_call.rfind(')')]
+    fn_parameters = [remove_quotation(v) for v in fn_parameters_str.split(",")]
     if fn_key in _functions.keys():
         return (_functions[fn_key], fn_parameters)
+
+
+def remove_quotation(value):
+    result = value
+    if value.startswith("\'") or value.startswith("\""):
+        result = result[1:]
+    if value.endswith("\'") or value.endswith("\""):
+        result = result[:-1]
+    return result

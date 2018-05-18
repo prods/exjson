@@ -21,5 +21,5 @@ def parse(source, raise_error_on_invalid_value=False):
             c += 1
     for fn_key in calls.keys():
         #print(f"KEY: {fn_key}\nFN: {calls[fn_key]}\nCALL: {calls[fn_key][0].__name__}\nPARAMS: {calls[fn_key][1]}\nRESULT: {calls[fn_key][0](calls[fn_key][1])}\n---------\n")
-        updated_source = updated_source.replace(fn_key, calls[fn_key][0](calls[fn_key][1]))
+        updated_source = updated_source.replace(fn_key, calls[fn_key][0](*calls[fn_key][1]))
     return updated_source
