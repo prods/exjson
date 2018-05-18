@@ -26,7 +26,7 @@ def _exjson_now_utc(*args, **kwargs):
         now.strftime(args[0])
     elif len(args) == 0 and "format" in kwargs.keys():
         now.strftime(kwargs["format"])
-    return now.isoformat() + "Z"
+    return now.isoformat() + "-00:00"
 
 
 def _exjson_now_add(*args, **kwargs):

@@ -395,27 +395,6 @@ class EXJSONTestScenarios(object):
     def loads_json_without_property_override_raises_an_error(self, json_source):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
-    # def loads_json_evaluate_uuid_value(self):
-    #     return (exjson.load("./samples/dynamic-ref-values.json", encoding='utf-8'), {
-    #         "Name": "Value Test",
-    #         "Id": "$.uuid()",
-    #         "Values": [{
-    #             "N": "$.sequence.next()",
-    #             "Name": "$.Name",
-    #             "ParentId": "$.Id",
-    #             "Id": "$.uuid()",
-    #             "Description": "this.name is a child object"
-    #         },
-    #             {
-    #                 "N": "$.sequence.next()",
-    #                 "Name": "$.Name",
-    #                 "ParentId": "$.Id",
-    #                 "Id": "$.uuid()",
-    #                 "Description": "this.name is a child object"
-    #             }
-    #         ]
-    #     })
-
     def loads_json_evaluate_hashes_value(self, json_source, hash_id = None):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
@@ -602,12 +581,36 @@ class PyXJSONTests(TestCase):
         iso8601 = re.compile(
             r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
         result_format_match = iso8601.match(result[0]["date"])
+        print(result[0]["date"])
+
+        tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds()/3600)
+        tz_offset_hours_sep = tz_offset_hours.find('.')
+        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
+
         self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
                         result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
                         result_format_match["day"] == str(datetime.now().day).rjust(2, '0') and
                         result_format_match["hour"] == str(datetime.now().hour).rjust(2, '0') and
                         result_format_match["min"] == str(datetime.now().minute).rjust(2, '0') and
-                        result_format_match["sec"] is not None)
+                        result_format_match["sec"] is not None and
+                        result[0]["date"].endswith(tz_formatted))
+
+    def test_loads_json_evaluate_raw_utc_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now().utc()"
+            }""")
+        iso8601 = re.compile(
+            r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
+        result_format_match = iso8601.match(result[0]["date"])
+        print(result[0]["date"])
+        self.assertTrue(result_format_match["year"] == str(datetime.utcnow().year) and
+                        result_format_match["month"] == str(datetime.utcnow().month).rjust(2, '0') and
+                        result_format_match["day"] == str(datetime.utcnow().day).rjust(2, '0') and
+                        result_format_match["hour"] == str(datetime.utcnow().hour).rjust(2, '0') and
+                        result_format_match["min"] == str(datetime.utcnow().minute).rjust(2, '0') and
+                        result_format_match["sec"] is not None and
+                        result[0]["date"].endswith("-00:00"))
 
     # def test_loads_json_evaluate_raw_utc_date_value(self):
     #     result = tests.generate_call_graph(
