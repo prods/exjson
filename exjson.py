@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from exjsonscripting import parse
+from scripting import parse
 
 _JSON_OPENING_CHARS = [',', '[', '{', ':']
 _JSON_CLOSING_CHARS = [',', '}', ']']
