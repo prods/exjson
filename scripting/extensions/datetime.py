@@ -12,7 +12,7 @@ def _get_now_utc():
     return datetime.utcnow()
 
 def now(*args):
-    """Gets current date and time. Default format is ISO8601+TZ."""
+    """Gets current date and time."""
     now = _get_now()
     frmt = None
     if len(args) > 0:
@@ -21,7 +21,7 @@ def now(*args):
 
 
 def now_utc(*args):
-    """Gets current UTC date and time. Default format is ISO8601+TZ."""
+    """Gets current UTC date and time."""
     now = _get_now_utc()
     frmt = None
     if len(args) > 0:
@@ -37,7 +37,8 @@ def now_utc_add(*args):
     return "PENDING"
 
 
-def _format(dt:datetime, format):
+def _format(dt:datetime, format = None):
+    """Formats the provided datetime. Default ISO8601+TZ."""
     if format is not None:
         return dt.strftime(format)
     if dt.utcoffset() is None:
