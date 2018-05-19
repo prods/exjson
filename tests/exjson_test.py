@@ -395,10 +395,10 @@ class EXJSONTestScenarios(object):
     def loads_json_without_property_override_raises_an_error(self, json_source):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
-    def loads_json_evaluate_hashes_value(self, json_source, hash_id = None):
+    def loads_json_evaluate_hashes_value(self, json_source, test_name=None):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
-    def loads_json_evaluate_raw_date_value(self, json_source):
+    def loads_json_evaluate_raw_date_value(self, json_source, test_name=None):
         return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
             "date": datetime.now(tzlocal()).isoformat()
         })
@@ -618,6 +618,14 @@ class PyXJSONTests(TestCase):
                         result_format_match["min"] == str(datetime.utcnow().minute).rjust(2, '0') and
                         result_format_match["sec"] is not None and
                         result[0]["date"].endswith("-00:00"))
+
+    def test_loads_json_evaluate_formatted_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now('%Y-%M-%d %H:%m')"
+            }""", "formatted")
+        print(result[0]["date"])
+        self.assertTrue(result[0]["date"] == datetime.now().strftime("%Y-%M-%d %H:%m"))
 
     # def test_loads_json_evaluate_raw_utc_date_value(self):
     #     result = tests.generate_call_graph(
