@@ -619,13 +619,24 @@ class PyXJSONTests(TestCase):
                         result_format_match["sec"] is not None and
                         result[0]["date"].endswith("-00:00"))
 
-    def test_loads_json_evaluate_formatted_date_value(self):
+    def test_loads_json_evaluate_python_formatted_date_value(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
             "date": "$.now('%Y-%M-%d %H:%m')"
-            }""", "formatted")
+            }""", "python_formatted")
         print(result[0]["date"])
         self.assertTrue(result[0]["date"] == datetime.now().strftime("%Y-%M-%d %H:%m"))
+
+    def test_loads_json_evaluate_universal_formatted_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now('yyyy-MM-dd HH:mm')",
+            "date1": "$.now('%Y-%m-%d %H:%M')"
+            }""", "univeral_formatted")
+        print(result[0]["date"])
+        #print(result[0]["date1"])
+        #print(datetime.now().strftime("%Y-%m-%d %H:%M"))
+        self.assertTrue(result[0]["date"] == datetime.now().strftime("%Y-%m-%d %H:%M"))
 
     # def test_loads_json_evaluate_raw_utc_date_value(self):
     #     result = tests.generate_call_graph(
