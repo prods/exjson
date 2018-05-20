@@ -87,17 +87,21 @@ def _format(dt: datetime, format=None):
 
 
 def _convert_universal_format(format):
-    if "%" in format:
-        return format
-    else:
-        i = 0
-        _work_map = _DATETIME_FORMAT_MAP
-        for f in _work_map:
-            if f[1] in format:
-                print(f"-> {format}")
-                format = format.replace(f[1], f[2])
-                print(f"{f[1]} -> {f[2]} = {format}\n")
-                del _work_map[i]
-            i += 1
-
-    return format
+    """Converts Universal Date Time Format to Python strftime format string"""
+    i = 0
+    tokens_count = 0
+    token_string = format
+    python_format = format
+    token_map = _DATETIME_FORMAT_MAP
+    for f in token_map:
+        # Prevents iteration from continuing after all mapped tokens are found.
+        # If not evaluated this way logic may replace already mapped tokens like %"d" or %"m", etc...
+        if f[1] in token_string:
+            #print(f"token_string = {token_string}")
+            #print(f"python_format = {python_format}")
+            token_string = token_string.replace(f[1], "")
+            python_format = python_format.replace(f[1], f[2])
+            #print(f"python_format = {python_format} ({f[1]} -> {f[2]})\n")
+            del token_map[i]
+        i += 1
+    return python_format

@@ -1,9 +1,11 @@
 from scripting.extensions.cryptography import uuidv4, md5, sha1, sha256, sha512
 from scripting.extensions.datetime import now, now_add, now_utc, now_utc_add
+from scripting.extensions.sequences import sequence
 
 # Functions Dict
 # This is ok for now since the list of functions is short. But further refactoring may be required if it grows.
 # Warning: When adding functions please do not include the closing parenthesis as seen in existing ones.
+
 _functions = {
     "$.now": now,
     "$.now().add": now_add,
@@ -13,7 +15,8 @@ _functions = {
     "$.md5": md5,
     "$.sha1": sha1,
     "$.sha256": sha256,
-    "$.sha512": sha512
+    "$.sha512": sha512,
+    "$.sequence": sequence
 }
 
 

@@ -395,7 +395,7 @@ class EXJSONTestScenarios(object):
     def loads_json_without_property_override_raises_an_error(self, json_source):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
-    def loads_json_evaluate_hashes_value(self, json_source, test_name=None):
+    def loads_json_evaluate(self, json_source, test_name=None):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
     def loads_json_evaluate_raw_date_value(self, json_source, test_name=None):
@@ -540,42 +540,42 @@ class PyXJSONTests(TestCase):
 
     def test_loads_json_evaluate_uuid_value(self):
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_hashes_value, """{
+            self._scenarios.loads_json_evaluate, """{
             "hash": "$.uuid()"
             }""", "uuid")
         self.assertIsNotNone(result["hash"], "uuid")
 
     def test_loads_json_evaluate_md5_value(self):
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_hashes_value, """{
+            self._scenarios.loads_json_evaluate, """{
             "hash": "$.md5()"
             }""", "md5")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_md5_of_string_value(self):
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_hashes_value, """{
+            self._scenarios.loads_json_evaluate, """{
                "hash": "$.md5('test string')"
                }""", "md5_of_string_value")
         self.assertTrue(result["hash"] == '6f8db599de986fab7a21625b7916589c')
 
     def test_loads_json_evaluate_sha1_value(self):
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_hashes_value, """{
+            self._scenarios.loads_json_evaluate, """{
              "hash": "$.sha1()"
              }""", "sha1")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_sha256_value(self):
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_hashes_value, """{
+            self._scenarios.loads_json_evaluate, """{
              "hash": "$.sha256()"
              }""", "sha256")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_sha512_value(self):
         result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_hashes_value, """{
+            self._scenarios.loads_json_evaluate, """{
              "hash": "$.sha512()"
              }""", "sha512")
         self.assertIsNotNone(result["hash"])
@@ -590,7 +590,7 @@ class PyXJSONTests(TestCase):
         result_format_match = iso8601.match(result[0]["date"])
         print(result[0]["date"])
 
-        tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds()/3600)
+        tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
         tz_offset_hours_sep = tz_offset_hours.find('.')
         tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
 
@@ -622,20 +622,11 @@ class PyXJSONTests(TestCase):
     def test_loads_json_evaluate_python_formatted_date_value(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
-            "date": "$.now('%Y-%M-%d %H:%m')"
-            }""", "python_formatted")
+                    "date": "$.now('yyyy-MM-dd HH:mm')"
+                    }""", "formatted")
         print(result[0]["date"])
-        self.assertTrue(result[0]["date"] == datetime.now().strftime("%Y-%M-%d %H:%m"))
-
-    def test_loads_json_evaluate_universal_formatted_date_value(self):
-        result = tests.generate_call_graph(
-            self._scenarios.loads_json_evaluate_raw_date_value, """{
-            "date": "$.now('yyyy-MM-dd HH:mm')",
-            "date1": "$.now('%Y-%m-%d %H:%M')"
-            }""", "univeral_formatted")
-        print(result[0]["date"])
-        #print(result[0]["date1"])
-        #print(datetime.now().strftime("%Y-%m-%d %H:%M"))
+        # print(result[0]["date1"])
+        # print(datetime.now().strftime("%Y-%m-%d %H:%M"))
         self.assertTrue(result[0]["date"] == datetime.now().strftime("%Y-%m-%d %H:%M"))
 
     # def test_loads_json_evaluate_raw_utc_date_value(self):
@@ -653,3 +644,58 @@ class PyXJSONTests(TestCase):
     #         self._scenarios.loads_json_evaluate_formatted_date_and_time_value)
     #     self.assertDictEqual(result[0], result[1])
 
+    def test_load_json_evaluate_sequence_single_int(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "first": [
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') }
+                            ]
+                            }""", "sequence_single_int")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": 1},
+                {"id": 2},
+                {"id": 3},
+                {"id": 4}
+            ]
+        })
+
+    def test_load_json_evaluate_sequence_multiple_int(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "first": [
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') }
+                            ],
+                            "second": [
+                                { "id": $.sequence('B') },
+                                { "id": $.sequence('B') },
+                                { "id": $.sequence('B') },
+                                { "id": $.sequence('B') }
+                            ],
+                            "third": [
+                                { "id": $.sequence('A') }
+                            ]
+                            }""", "sequence_multiple_int")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": 1},
+                {"id": 2},
+                {"id": 3},
+                {"id": 4}
+            ],
+            "second": [
+                {"id": 1},
+                {"id": 2},
+                {"id": 3},
+                {"id": 4}
+            ],
+            "third": [
+                {"id": 5}
+            ]
+        })
