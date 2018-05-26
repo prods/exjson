@@ -55,11 +55,11 @@ def _parse_reference_calls(source: str):
     source_tree = base[0]
     # References Tree
     ref_calls = base[1]
-    print(source_tree)
-    print(ref_calls)
+    #print(source_tree)
+    #print(ref_calls)
     if ref_calls is not None and len(ref_calls) > 0:
         for r in ref_calls:
-            print(ref_calls[r])
+            #print(ref_calls[r])
             updated_source = updated_source.replace(r, source_tree[ref_calls[r]])
             # Update Tree when a value ref_call is updated. This guarantees references of references to get the initially referenced value.
             source_tree = _extract_tree(updated_source, extract_ref_calls=False)[0]
@@ -121,11 +121,8 @@ def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool 
             # Extract References
             if extract_ref_calls:
                 ref_call = _extract_ref_call(source_value, tree.keys())
-                # if ref_call is not None:
-                #    print(f"|{ref_call[1]}| IN {[x for x in tree.keys()]}")
                 if ref_call is not None and ref_call[1] in tree.keys():
                     if ref_call[0] not in ref_tree:
-                        # print(f">>>  |{ref_call}| IN {[x for x in ref_tree.keys()]}")
                         ref_tree[ref_call[0]] = ref_call[1]
             # Reset
             working_source = working_source[i + source_value_end_index:]
@@ -133,9 +130,6 @@ def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool 
             continue
         # Next Character
         i = i + 1
-    # Debug
-    # for r in tree:
-    #    print(f"> {r} = {tree[r]}\n")
     return (tree, ref_tree)
 
 
@@ -150,6 +144,7 @@ def _extract_ref_call(source: str, keys: list):
                 ref_start = i
                 ref_prefix_end = source[i:].index(".") + 1
                 ref_call_prefix = source[i:ref_prefix_end - 1]
+                #print(f"++++ RS:{ref_start} PE:{ref_prefix_end} P:{ref_call_prefix} ")
             if ref_start >= 0:
                 if ref_call_without_prefix not in keys:
                     if ref_prefix_end > 0 and i >= ref_prefix_end:
@@ -158,7 +153,7 @@ def _extract_ref_call(source: str, keys: list):
                         ref_call_without_prefix = ref_call_without_prefix + source[i]
                 else:
                     break
-        print(f">>>>> {ref_call_without_prefix}")
+        #print(f">>>>> {ref_call_prefix} {ref_call_without_prefix}")
         if ref_call_prefix != "" and ref_call_without_prefix != "":
             ref_call = f"{ref_call_prefix}.{ref_call_without_prefix}"
             return (ref_call, ref_call_without_prefix, ref_call_prefix)

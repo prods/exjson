@@ -737,7 +737,7 @@ class PyXJSONTests(TestCase):
             ]
         })
 
-    def test_load_json_evaluate_references(self):
+    def test_load_json_evaluate_root_references(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "prefix": "A",
