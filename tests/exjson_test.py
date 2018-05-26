@@ -745,9 +745,9 @@ class PyXJSONTests(TestCase):
                                 { "id": "A1" },
                                 { "id": "A2" },
                                 { "id": "A3" },
-                                { "id": "A4" }
+                                { "id": "$root.prefix4" }
                             ],
-                            "second": "$root.prefix,AAA",
+                            "second": "$root.prefix",
                             "third": {
                                 "test1": 23,
                                 "test2": [
@@ -755,7 +755,9 @@ class PyXJSONTests(TestCase):
                                 ],
                                 "test3": {
                                     "deep1": 44,
-                                    "deep2": false
+                                    "deep2": false,
+                                    "deep3": "$root.second",
+                                    "deep4": "$root.third.test1"
                                 }
                             }
                             }""", "references")
@@ -767,7 +769,7 @@ class PyXJSONTests(TestCase):
                 {"id": "A3"},
                 {"id": "A4"}
             ],
-            "second": "A,AAA",
+            "second": "A",
             "third": {
                 "test1": 23,
                 "test2": [
@@ -775,7 +777,9 @@ class PyXJSONTests(TestCase):
                 ],
                 "test3": {
                     "deep1": 44,
-                    "deep2": False
+                    "deep2": False,
+                    "deep3": "3",
+                    "deep4": "23"
                 }
             }
         })

@@ -2,8 +2,7 @@ import re
 
 from scripting import extensions
 
-_REF_VALUE_CALL = re.compile(r'\$this\.(.*)|\$parent\.(.*)|\$_\.(.*)|\$root\.(.*)',
-                             re.IGNORECASE | re.MULTILINE)
+_REF_PREFIXES = ['$this.', '$parent.', '$root.']
 
 
 def parse(source, raise_error_on_invalid_value=False):
@@ -47,26 +46,31 @@ def parse(source, raise_error_on_invalid_value=False):
     return updated_source
 
 
-def _parse_reference_calls(source):
+def _parse_reference_calls(source: str):
     """Parses reference calls"""
     updated_source = source
-    source_data_map = _extract_data_map(updated_source)
-    ref_calls = re.finditer(_REF_VALUE_CALL, updated_source)
-    for match_num, match in enumerate(ref_calls):
-        if len(match.groups()) > 0:
-            for value in match.groups():
-                if value is None:
-                    continue
-                ref_call = str(match.group())
-                ref_call = _get_ref_call(ref_call)
-                ref_call_key = ref_call.replace("$this.", "").replace("$root.", "").replace("$parent.", "")
-                if ref_call_key in source_data_map.keys():
-                    updated_source = updated_source.replace(ref_call, source_data_map[ref_call_key])
+    # Extract Source Tree and Reference Tree
+    base = _extract_tree(updated_source)
+    # Source Tree
+    source_tree = base[0]
+    # References Tree
+    ref_calls = base[1]
+    print(source_tree)
+    print(ref_calls)
+    if ref_calls is not None and len(ref_calls) > 0:
+        for r in ref_calls:
+            print(ref_calls[r])
+            updated_source = updated_source.replace(r, source_tree[ref_calls[r]])
+            # Update Tree when a value ref_call is updated. This guarantees references of references to get the initially referenced value.
+            source_tree = _extract_tree(updated_source, extract_ref_calls=False)[0]
     return updated_source
 
 
-def _extract_data_map(source):
+def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool = True):
     tree = {}
+    ref_tree = {}
+    if outer_tree is not None:
+        tree = {**outer_tree}
     i = 0
     done = False
     working_source = source
@@ -103,11 +107,26 @@ def _extract_data_map(source):
             source_value = source_value_scope[1:source_value_end_index].strip(' ').strip('\t').strip('"')
             # Process Object
             if source_value[0] == "{" and source_value[-1] == "}":
-                inner_object_tree = _extract_data_map(source_value)
-                for inner_object_key in inner_object_tree:
-                    tree[f"{source_key}.{inner_object_key}"] = inner_object_tree[inner_object_key]
+                inner_object_tree = _extract_tree(source_value, tree)
+                for inner_object_key in inner_object_tree[0]:
+                    tree[f"{source_key}.{inner_object_key}"] = inner_object_tree[0][inner_object_key]
+                    # Extract Ref Tree
+                    if extract_ref_calls:
+                        if inner_object_tree[1] is not None:
+                            for k in inner_object_tree[1]:
+                                if k not in ref_tree:
+                                    ref_tree[k] = inner_object_tree[1][k]
             # Set the Value
             tree[source_key] = source_value
+            # Extract References
+            if extract_ref_calls:
+                ref_call = _extract_ref_call(source_value, tree.keys())
+                # if ref_call is not None:
+                #    print(f"|{ref_call[1]}| IN {[x for x in tree.keys()]}")
+                if ref_call is not None and ref_call[1] in tree.keys():
+                    if ref_call[0] not in ref_tree:
+                        # print(f">>>  |{ref_call}| IN {[x for x in ref_tree.keys()]}")
+                        ref_tree[ref_call[0]] = ref_call[1]
             # Reset
             working_source = working_source[i + source_value_end_index:]
             i = 0
@@ -115,15 +134,35 @@ def _extract_data_map(source):
         # Next Character
         i = i + 1
     # Debug
-    #for r in tree:
+    # for r in tree:
     #    print(f"> {r} = {tree[r]}\n")
-    return tree
+    return (tree, ref_tree)
 
 
-def _get_ref_call(ref_call):
-    result = ""
-    for c in ref_call:
-        if c in [" ", "\'", "\"", ";", ",", "|", "-"]:
-            break
-        result += c
-    return result
+def _extract_ref_call(source: str, keys: list):
+    if "$this." in source or "$parent." in source or "$root." in source:
+        ref_start = -1
+        ref_prefix_end = -1
+        ref_call_without_prefix = ""
+        ref_call_prefix = ""
+        for i in range(len(source)):
+            if source[i] == "$":
+                ref_start = i
+                ref_prefix_end = source[i:].index(".") + 1
+                ref_call_prefix = source[i:ref_prefix_end - 1]
+            if ref_start >= 0:
+                if ref_call_without_prefix not in keys:
+                    if ref_prefix_end > 0 and i >= ref_prefix_end:
+                        if source[i] in ['"']:
+                            break
+                        ref_call_without_prefix = ref_call_without_prefix + source[i]
+                else:
+                    break
+        print(f">>>>> {ref_call_without_prefix}")
+        if ref_call_prefix != "" and ref_call_without_prefix != "":
+            ref_call = f"{ref_call_prefix}.{ref_call_without_prefix}"
+            return (ref_call, ref_call_without_prefix, ref_call_prefix)
+        else:
+            return None
+    else:
+        return None
