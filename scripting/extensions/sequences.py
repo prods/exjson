@@ -38,5 +38,5 @@ def _close_sequences():
 
 
 # Parser will run each call by it self and not evaluate one instance and update all calls with the result
-sequence.__isolated_instance_execution__ = True
-sequence.__close__ = _close_sequences
+sequence._isolated_instance_execution = True
+sequence._close = _close_sequences

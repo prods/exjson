@@ -9,7 +9,7 @@ from tests import tools, GENERATE_CALL_GRAPHS, CALL_GRAPHS_PATH
 import exjson
 
 __author__ = 'prods'
-__project__ = 'xjson'
+__project__ = 'exjson'
 
 
 class EXJSONTestScenarios(object):
@@ -698,4 +698,84 @@ class PyXJSONTests(TestCase):
             "third": [
                 {"id": 5}
             ]
+        })
+
+    def test_loads_json_evaluate_sequence_multiple_string(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "first": [
+                                { "id": "AX-$.sequence('A')" },
+                                { "id": "AX-$.sequence('A')" },
+                                { "id": "AX-$.sequence('A')" },
+                                { "id": "AX-$.sequence('A')" }
+                            ],
+                            "second": [
+                                { "id": "BX-$.sequence('B')" },
+                                { "id": "BX-$.sequence('B')" },
+                                { "id": "BX-$.sequence('B')" },
+                                { "id": "BX-$.sequence('B')" }
+                            ],
+                            "third": [
+                                { "id": "AXX-$.sequence('A')" }
+                            ]
+                            }""", "sequence_multiple_string")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": "AX-1"},
+                {"id": "AX-2"},
+                {"id": "AX-3"},
+                {"id": "AX-4"}
+            ],
+            "second": [
+                {"id": "BX-1"},
+                {"id": "BX-2"},
+                {"id": "BX-3"},
+                {"id": "BX-4"}
+            ],
+            "third": [
+                {"id": "AXX-5"}
+            ]
+        })
+
+    def test_load_json_evaluate_references(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "prefix": "A",
+                            "first": [
+                                { "id": "A1" },
+                                { "id": "A2" },
+                                { "id": "A3" },
+                                { "id": "A4" }
+                            ],
+                            "second": "$root.prefix,AAA",
+                            "third": {
+                                "test1": 23,
+                                "test2": [
+                                    1,2,3
+                                ],
+                                "test3": {
+                                    "deep1": 44,
+                                    "deep2": false
+                                }
+                            }
+                            }""", "references")
+        self.assertDictEqual(result, {
+            "prefix": "A",
+            "first": [
+                {"id": "A1"},
+                {"id": "A2"},
+                {"id": "A3"},
+                {"id": "A4"}
+            ],
+            "second": "A,AAA",
+            "third": {
+                "test1": 23,
+                "test2": [
+                    1, 2, 3
+                ],
+                "test3": {
+                    "deep1": 44,
+                    "deep2": False
+                }
+            }
         })

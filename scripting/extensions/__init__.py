@@ -19,7 +19,6 @@ _functions = {
     "$.sequence": sequence
 }
 
-
 def get_function(func_call):
     """Gets an extension function from a raw function call"""
     fn_key = func_call[:func_call.rfind('('):]

@@ -11,8 +11,6 @@ _INCLUDE_DIRECTIVE = re.compile(
     re.IGNORECASE | re.MULTILINE)
 _PARENT_FILE_KEY = "parent_file"
 _PARENT_FILE_STRING_SRC = "__string__"
-_DYN_REF_VALUE_CALL = re.compile(r'\$\.(.*?)\(\)|\$\.(.*?)\ |\$\.(.*?)[\"\']|this\.(.*?)[\"\']|this\.(.*?)\ ',
-                                 re.IGNORECASE | re.MULTILINE)
 
 
 def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
