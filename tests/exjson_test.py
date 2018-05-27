@@ -851,7 +851,7 @@ class PyXJSONTests(TestCase):
                                     "deep1": 44,
                                     "deep2": false,
                                     "deep3": "$root.second",
-                                    "deep4": "$this.deep1"
+                                    "deep4": $this.deep1
                                 }
                             }
                             }""", "this_references")
@@ -873,7 +873,7 @@ class PyXJSONTests(TestCase):
                     "deep1": 44,
                     "deep2": False,
                     "deep3": "A",
-                    "deep4": "23"
+                    "deep4": 44
                 }
             }
         })
