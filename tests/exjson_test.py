@@ -783,3 +783,98 @@ class PyXJSONTests(TestCase):
                 }
             }
         })
+
+    def test_load_json_evaluate_parent_references(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "prefix": "A",
+                            "first": [
+                                { "id": "A1" },
+                                { "id": "A2" },
+                                { "id": "A3" },
+                                { "id": "$root.prefix4" }
+                            ],
+                            "second": "$root.prefix",
+                            "third": {
+                                "test1": 23,
+                                "test2": [
+                                    1,2,3
+                                ],
+                                "test3": {
+                                    "deep1": 44,
+                                    "deep2": false,
+                                    "deep3": "$root.second",
+                                    "deep4": "$parent.test1"
+                                }
+                            }
+                            }""", "parent_references")
+        self.assertDictEqual(result, {
+            "prefix": "A",
+            "first": [
+                {"id": "A1"},
+                {"id": "A2"},
+                {"id": "A3"},
+                {"id": "A4"}
+            ],
+            "second": "A",
+            "third": {
+                "test1": 23,
+                "test2": [
+                    1, 2, 3
+                ],
+                "test3": {
+                    "deep1": 44,
+                    "deep2": False,
+                    "deep3": "A",
+                    "deep4": "23"
+                }
+            }
+        })
+
+    def test_load_json_evaluate_this_references(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "prefix": "A",
+                            "first": [
+                                { "id": "A1" },
+                                { "id": "A2" },
+                                { "id": "A3" },
+                                { "id": "$root.prefix4" }
+                            ],
+                            "second": "$this.prefix",
+                            "third": {
+                                "test1": 23,
+                                "test2": [
+                                    1,2,3
+                                ],
+                                "test3": {
+                                    "deep1": 44,
+                                    "deep2": false,
+                                    "deep3": "$root.second",
+                                    "deep4": "$parent.test1"
+                                }
+                            }
+                            }""", "this_references")
+        self.assertDictEqual(result, {
+            "prefix": "A",
+            "first": [
+                {"id": "A1"},
+                {"id": "A2"},
+                {"id": "A3"},
+                {"id": "A4"}
+            ],
+            "second": "A",
+            "third": {
+                "test1": 23,
+                "test2": [
+                    1, 2, 3
+                ],
+                "test3": {
+                    "deep1": 44,
+                    "deep2": False,
+                    "deep3": "A",
+                    "deep4": "23"
+                }
+            }
+        })
+
