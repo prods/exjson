@@ -115,7 +115,7 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
                     full_key = f"{source_key}.{inner_object_key.replace(source_key, '')}".replace("..", ".")
                     tree[full_key] = inner_object_tree[0][inner_object_key]
                     # Reference Tree
-                    ref_tree[full_key] = _get_ref_tree_entry(full_key, source_key)
+                    ref_tree[full_key] = _get_abs_ref_tree_entry(full_key, source_key)
                     # Extract Ref Calls
                     if extract_ref_calls:
                         if inner_object_tree[1] is not None:
@@ -125,13 +125,14 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
             # Set the Value
             tree[source_key] = source_value
             # Reference tree
-            ref_tree[source_key] = _get_ref_tree_entry(source_key, parent)
+            ref_tree[source_key] = _get_abs_ref_tree_entry(source_key, parent)
             # Extract References
             if extract_ref_calls:
                 tree_keys = [k for k in tree.keys()]
                 if outer_tree is not None:
                     tree_keys = tree_keys + [k for k in outer_tree.keys()]
-                ref_call = _extract_ref_call(source_value, tree_keys)
+                ref_call = _extract_ref_call(source_value, tree_keys, source_key)
+                ref_call = _get_abs_ref_call_from_ref_tree(ref_tree, ref_call)
                 if ref_call is not None and ref_call[1] in tree_keys:
                     if ref_call[0] not in ref_list:
                         ref_list[ref_call[0]] = ref_call[1]
@@ -144,7 +145,7 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
     return (tree, ref_list, ref_tree)
 
 
-def _extract_ref_call(source: str, keys: list):
+def _extract_ref_call(source: str, keys: list, caller:str):
     if "$this." in source or "$parent." in source or "$root." in source:
         ref_call_without_prefix = ""
         ref_start_index = source.index("$")
@@ -154,7 +155,7 @@ def _extract_ref_call(source: str, keys: list):
         except:
             return None
         ref_call_prefix = working_source[:ref_prefix_end]
-        working_source = working_source[ref_prefix_end+1:]
+        working_source = working_source[ref_prefix_end + 1:]
         i = 0
         while i < len(working_source):
             if working_source[i] in ['"', '\n', '\t', ' ', '$', '}', ']', ',', '|']:
@@ -165,22 +166,37 @@ def _extract_ref_call(source: str, keys: list):
             i = i + 1
         if ref_call_prefix != "" and ref_call_without_prefix != "":
             ref_call = f"{ref_call_prefix}.{ref_call_without_prefix}"
-            # print(f">>>>> {ref_call} {ref_call_prefix} |{ref_call_without_prefix}|")
-            return (ref_call, ref_call_without_prefix, ref_call_prefix)
+            return (ref_call, ref_call_without_prefix, ref_call_prefix, caller)
         else:
             return None
     else:
         return None
 
 
-def _get_ref_tree_entry(source_key:str, parent_key:str):
+def _get_abs_ref_tree_entry(source_key: str, parent_key: str):
+    """Get Absolute path to reference prefixes"""
     this = source_key
     parent = parent_key
-    if '.' not in source_key:
-        this = "$root."
-    else:
+    if '.' in source_key:
         this = '.'.join(source_key.split(".")[:-1])
+        parent = '.'.join(source_key.split(".")[:-2])
+        if parent != "" and parent[-1] == ".":
+            parent = parent[:-1]
     return {
-        "$parent.": parent,
-        "$this.": this
+        "parent": parent,
+        "this": this
     }
+
+def _get_abs_ref_call_from_ref_tree(ref_tree:dict, ref_call:tuple):
+    if ref_tree is not None and ref_call is not None:
+        if '$this' in ref_call[2]:
+            return ref_call + (ref_tree[ref_call[3]]["this"],)
+        elif '$parent' in ref_call[2]:
+            return ref_call + (ref_tree[ref_call[3]]["this"],)
+        else:
+            return ref_call + ('$root',)
+    else:
+        if ref_call is not None:
+            return ref_call + ('$root',)
+        else:
+            return None
