@@ -284,7 +284,9 @@ Result:
 #### Scripting
 EXJSON supports dynamic values by using an extensible scripting engine based on python. Commonly used extension functions can be found in the `scripting/extensions` package but you can create and load your own custom extensions functions by using the `register_custom_scripting_extension`.
 
-Function calls can be interpolated in strings like `AAX-$.sequence('product-sequence')ZZ` which will yield `AAX-1ZZ`.
+
+- Function calls can be interpolated in strings like `AAX-$.sequence('product-sequence')ZZ` which will yield `AAX-1ZZ`.
+- Null values can be set by using `null`.
 
 ##### Standard Functions:
 ###### **Cryptography**
