@@ -803,8 +803,8 @@ class PyXJSONTests(TestCase):
                                 "test3": {
                                     "deep1": 44,
                                     "deep2": false,
-                                    "deep3": "$root.second",
-                                    "deep4": "$parent.test1"
+                                    "deep3": "$root.secondB",
+                                    "deep4": "AZ-$parent.test1X"
                                 }
                             }
                             }""", "parent_references")
@@ -825,8 +825,8 @@ class PyXJSONTests(TestCase):
                 "test3": {
                     "deep1": 44,
                     "deep2": False,
-                    "deep3": "A",
-                    "deep4": "23"
+                    "deep3": "AB",
+                    "deep4": "AZ-23X"
                 }
             }
         })

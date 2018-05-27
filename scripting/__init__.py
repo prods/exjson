@@ -67,6 +67,8 @@ def _parse_reference_calls(source: str):
 
 def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extract_ref_calls: bool = True):
     tree = {}
+    if outer_tree is not None:
+        tree = { **outer_tree }
     ref_list = {}
     ref_tree = {}
     i = 0
@@ -126,13 +128,50 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
             # Extract References
             if extract_ref_calls:
                 tree_keys = [k for k in tree.keys()]
-                if outer_tree is not None:
-                    tree_keys = tree_keys + [k for k in outer_tree.keys()]
                 ref_call = _extract_ref_call(source_value, tree_keys, source_key)
                 ref_call = _get_abs_ref_call_from_ref_tree(ref_tree, ref_call)
-                if ref_call is not None and ref_call[5] in tree_keys:
-                    if ref_call[0] not in ref_list:
-                        ref_list[ref_call[0]] = ref_call[5]
+                if ref_call is not None:
+                    if ref_call[5] in tree_keys:
+                        if ref_call[0] not in ref_list:
+                            ref_list[ref_call[0]] = ref_call[5]
+                    else:
+                        # TODO: Review incremental key verification
+                        i = 0
+                        found = False
+                        ref_call_base = ref_call[5]
+                        ref_call_temp = ref_call_base
+                        while True:
+                            if i > len(ref_call_base):
+                                break
+                            if ref_call_temp in tree_keys:
+                                found = True
+                                break
+                            ref_call_temp = ref_call_base[:i]
+                            i = i + 1
+                        if found:
+                            ref_call_new = ()
+                            for r in range(0, len(ref_call)):
+                                ref_call_new_value = ref_call[r]
+                                if r == 5:
+                                    ref_call_new_value = ref_call_temp
+                                else:
+                                    ref_call_last_element_index = -1
+                                    ref_call_elements = ref_call_temp.split('.')
+                                    ref_call_last_element = ref_call_elements[-1]
+                                    if len(ref_call_elements) > 1:
+                                        try:
+                                            ref_call_last_element_index = ref_call[r].index(ref_call_last_element)
+                                        except:
+                                            pass
+                                        if ref_call_last_element_index > 0:
+                                            ref_call_last_element_index = ref_call_last_element_index + len(ref_call_last_element)
+                                        ref_call_new_value = ref_call[r][:ref_call_last_element_index]
+                                    else:
+                                        ref_call_new_value = ref_call[r]
+                                ref_call_new = ref_call_new + (ref_call_new_value,)
+                            if ref_call_new[0] not in ref_list:
+                                ref_list[ref_call_new[0]] = ref_call_temp
+
             # Reset
             working_source = working_source[i + source_value_end_index:]
             i = 0
