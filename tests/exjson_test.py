@@ -841,7 +841,7 @@ class PyXJSONTests(TestCase):
                                 { "id": "A3" },
                                 { "id": "$root.prefix4" }
                             ],
-                            "second": "$this.prefix",
+                            "second": "$root.prefix",
                             "third": {
                                 "test1": 23,
                                 "test2": [
@@ -851,7 +851,7 @@ class PyXJSONTests(TestCase):
                                     "deep1": 44,
                                     "deep2": false,
                                     "deep3": "$root.second",
-                                    "deep4": "$parent.test1"
+                                    "deep4": "$this.deep1"
                                 }
                             }
                             }""", "this_references")

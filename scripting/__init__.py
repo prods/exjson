@@ -53,13 +53,15 @@ def _parse_reference_calls(source: str):
     base = _extract_tree(updated_source)
     # Source Tree
     source_tree = base[0]
-    # References Tree
+    # References
     ref_calls = base[1]
-    #print(source_tree)
-    #print(ref_calls)
+    # Reference Tree
+    ref_tree = base[2]
     if ref_calls is not None and len(ref_calls) > 0:
         for r in ref_calls:
-            #print(ref_calls[r])
+            if '$this.' in ref_calls[r] or '$parent.' in ref_calls:
+                # TODO: Implement mapping based on ref_tree
+                pass
             updated_source = updated_source.replace(r, source_tree[ref_calls[r]])
             # Update Tree when a value ref_call is updated. This guarantees references of references to get the initially referenced value.
             source_tree = _extract_tree(updated_source, extract_ref_calls=False)[0]
@@ -68,6 +70,7 @@ def _parse_reference_calls(source: str):
 
 def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extract_ref_calls: bool = True):
     tree = {}
+    ref_list = {}
     ref_tree = {}
     i = 0
     done = False
@@ -111,14 +114,18 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
                 for inner_object_key in inner_object_tree[0]:
                     full_key = f"{source_key}.{inner_object_key.replace(source_key, '')}".replace("..", ".")
                     tree[full_key] = inner_object_tree[0][inner_object_key]
-                    # Extract Ref Tree
+                    # Reference Tree
+                    ref_tree[full_key] = _get_ref_tree_entry(full_key, source_key)
+                    # Extract Ref Calls
                     if extract_ref_calls:
                         if inner_object_tree[1] is not None:
                             for k in inner_object_tree[1]:
-                                if k not in ref_tree:
-                                    ref_tree[k] = inner_object_tree[1][k]
+                                if k not in ref_list:
+                                    ref_list[k] = inner_object_tree[1][k]
             # Set the Value
             tree[source_key] = source_value
+            # Reference tree
+            ref_tree[source_key] = _get_ref_tree_entry(source_key, parent)
             # Extract References
             if extract_ref_calls:
                 tree_keys = [k for k in tree.keys()]
@@ -126,15 +133,15 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
                     tree_keys = tree_keys + [k for k in outer_tree.keys()]
                 ref_call = _extract_ref_call(source_value, tree_keys)
                 if ref_call is not None and ref_call[1] in tree_keys:
-                    if ref_call[0] not in ref_tree:
-                        ref_tree[ref_call[0]] = ref_call[1]
+                    if ref_call[0] not in ref_list:
+                        ref_list[ref_call[0]] = ref_call[1]
             # Reset
             working_source = working_source[i + source_value_end_index:]
             i = 0
             continue
         # Next Character
         i = i + 1
-    return (tree, ref_tree)
+    return (tree, ref_list, ref_tree)
 
 
 def _extract_ref_call(source: str, keys: list):
@@ -164,3 +171,16 @@ def _extract_ref_call(source: str, keys: list):
             return None
     else:
         return None
+
+
+def _get_ref_tree_entry(source_key:str, parent_key:str):
+    this = source_key
+    parent = parent_key
+    if '.' not in source_key:
+        this = "$root."
+    else:
+        this = '.'.join(source_key.split(".")[:-1])
+    return {
+        "$parent.": parent,
+        "$this.": this
+    }
