@@ -48,21 +48,30 @@ def parse(source, raise_error_on_invalid_value=False):
 
 def _parse_reference_calls(source: str):
     """Parses reference calls"""
-    updated_source = source
-    # Extract Source Tree and Reference Tree
-    base = _extract_tree(updated_source)
-    # Source Tree
-    source_tree = base[0]
-    # References
-    ref_calls = base[1]
-    # Reference Tree
-    ref_tree = base[2]
-    if ref_calls is not None and len(ref_calls) > 0:
-        for r in ref_calls:
-            updated_source = updated_source.replace(r, source_tree[ref_calls[r]])
-            # Update Tree when a value ref_call is updated. This guarantees references of references to get the initially referenced value.
-            source_tree = _extract_tree(updated_source, extract_ref_calls=False)[0]
-    return updated_source
+    if _has_reference_calls(source):
+        updated_source = source
+        # Extract Source Tree and Reference Tree
+        base = _extract_tree(updated_source)
+        # Source Tree
+        source_tree = base[0]
+        # References
+        ref_calls = base[1]
+        # Reference Tree
+        ref_tree = base[2]
+        if ref_calls is not None and len(ref_calls) > 0:
+            for r in ref_calls:
+                updated_source = updated_source.replace(r, source_tree[ref_calls[r]])
+                # Update Tree when a value ref_call is updated. This guarantees references of references to get the initially referenced value.
+                source_tree = _extract_tree(updated_source, extract_ref_calls=False)[0]
+        return updated_source
+    else:
+        return source
+
+def _has_reference_calls(source:str):
+    if source is not None and ("$root." in source or "$this." in source or "$parent" in source):
+        return True
+    else:
+        return False
 
 
 def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extract_ref_calls: bool = True):
@@ -182,7 +191,7 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
 
 
 def _extract_ref_call(source: str, keys: list, caller:str):
-    if "$this." in source or "$parent." in source or "$root." in source:
+    if _has_reference_calls(source):
         ref_call_without_prefix = ""
         ref_start_index = source.index("$")
         working_source = source[ref_start_index:].replace('"', "").strip(' ')

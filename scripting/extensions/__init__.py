@@ -1,3 +1,5 @@
+import inspect
+
 from scripting.extensions.cryptography import uuidv4, md5, sha1, sha256, sha512
 from scripting.extensions.datetime import now, now_add, now_utc, now_utc_add
 from scripting.extensions.sequences import sequence
@@ -40,3 +42,16 @@ def remove_quotation(value):
         if value[-1] == "\'" or value[-1] == "\"":
             result = result[:-1]
     return result
+
+
+def register_extension_function(name:str, fn:function):
+    """Register Custom Extension Function"""
+    global _functions
+    fn_name = f"$.{name}"
+    if fn_name in _functions.keys():
+        raise Exception(f"Extension Function with name {fn_name} is already registered.")
+    else:
+        fn_args = inspect.getfullargspec(fn).args
+        if len(fn_args) == 0:
+            raise Exception(f"Provided Extension Function with name {fn_name} does not accept parameters. It must have at least an *arg parameter defined.")
+        _functions[fn_name] = fn

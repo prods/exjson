@@ -19,7 +19,7 @@ def md5(*args):
 
 
 def sha1(*args):
-    """Generates MD5 based on the provided string or a random int"""
+    """Generates SH1 based on the provided string or a random int"""
     value = ""
     if len(args) > 0:
         value = args[0]
@@ -29,7 +29,7 @@ def sha1(*args):
 
 
 def sha256(*args):
-    """Generates MD5 based on the provided string or a random int"""
+    """Generates SHA256 based on the provided string or a random int"""
     value = ""
     if len(args) > 0:
         value = args[0]
@@ -39,7 +39,7 @@ def sha256(*args):
 
 
 def sha512(*args):
-    """Generates MD5 based on the provided string or random int"""
+    """Generates SHA512 based on the provided string or random int"""
     value = ""
     if len(args) > 0:
         value = args[0]

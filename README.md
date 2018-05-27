@@ -4,7 +4,14 @@
 *This Project is under active development and it is not ready for production*
 
 ### Introduction
-This project was born as part of a toolset I required for another project of mine. EXJSON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
+EXJSON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
+
+### Main Features
+* C Style Single-Line and Multi-Lines Comments.
+* Inclusion of other JSON files.
+* Absolute and Relative Value referencing using `$root`, `$parent` and `$this`.
+* Extensible Scripting.
+
 
 ### Supported Python Versions
 - Python 3.x
@@ -145,8 +152,25 @@ The exjson API offers similar API to the one available on the Python standard JS
   - Does not support #INCLUDE directive.
   - Does not support comments.
 
-### Extended Features:
- * C Style Include directive
+### Features:
+
+#### C Style Comments
+Supports C Style Comments.
+Single-Line
+```c
+// TEST
+
+/* TEST */
+```
+
+```c
+/* 
+TEST
+*/
+```
+
+
+#### C Style Include directive
  Loads specified file from the same path where the file is being loaded.
  Supports 2 syntax always enclosed in comments:
  
@@ -185,21 +209,97 @@ If the script is not found an error will be raised.
 The `#INCLUDE` directive arguments can be enclosed in `<>` or `""`.
 
 
+#### Access Value by Reference
+`$root`, `$parent` and `$this` accessor prefixes are supported. This accessors allow you to reference values from the JSON root, parent or current object even if they are being included or its value is being calculated at runtime using a function and they can be interpolated into a string without the need of enclosing characters.
 
-* C Style Comments
-Supports C Style Comments.
-Single-Line
-```c
-// TEST
-
-/* TEST */
+Sample:
+```json
+{
+  "prefix": "A",
+    "first": [
+        { "id": "A1" },
+        { "id": "A2" },
+        { "id": "A3" },
+        { "id": "$root.prefix4" }
+    ],
+    "second": "$root.prefix",
+    "third": {
+        "test1": 23,
+        "test2": [
+            1,2,3
+        ],
+        "test3": {
+            "deep1": 44,
+            "deep2": false,
+            "deep3": "$root.secondB",
+            "deep4": "AZ-$parent.test1X"
+        }
+    },
+    "fourth": {
+      "t1": "B",
+      "t2": "$this.t1"
+    }
+}
 ```
 
-```c
-/* 
-TEST
-*/
+Result:
+```json
+{
+  "prefix": "A",
+    "first": [
+        { "id": "A1" },
+        { "id": "A2" },
+        { "id": "A3" },
+        { "id": "A4" }
+    ],
+    "second": "A",
+    "third": {
+        "test1": 23,
+        "test2": [
+            1,2,3
+        ],
+        "test3": {
+            "deep1": 44,
+            "deep2": false,
+            "deep3": "AB",
+            "deep4": "AZ-23X"
+        }
+    },
+    "fourth": {
+      "t1": "B",
+      "t2": "B"
+    }
+}
 ```
+
+ * **first[3]** = `$root.prefix4` references the value of `prefix` on the JSON root while interpolated in the string.
+ * **second** = `$root.prefix` references the value of `prefix` on the JSON root.
+ * **third.test3.deep3** = `$root.secondB` referenced the value of `second` on the JSON root while interpolated in the string.
+ * **third.test3.deep4** = `AZ-$parent.test1X` references the the value of `$root.third.test1` which is the parent object of `test3` while interpolated in a string.
+ * **fourth.t2** = `$this.t1` references the value of `$root.fourth.t1` which is the parent
+
+
+#### Scripting
+EXJSON supports dynamic values by using an extensible scripting engine based on python. Commonly used extension functions can be found in the `scripting/extensions` package but you can create and load your own custom extensions functions by using the `mount_extension` function.
+
+Standard Functions:
+* Cryptography
+  - $.md5(str)
+  - $.sha1(str)
+  - $.sha256(str)
+  - $.sha512(str)
+* Date and Time
+  - $.now()
+  - $.now().add()
+  - $.now().utc()
+  - $.now().utc().add()
+* Sequences and Identification
+  - $.uuid4()
+  - $sequence
+
+##### How to create and register a custom extension function
+** PENDING **
+
 
 ### How does it work:
 

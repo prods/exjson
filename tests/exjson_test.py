@@ -5,8 +5,8 @@ from unittest import TestCase
 from dateutil.tz import tzlocal
 
 import tests
-from tests import tools, GENERATE_CALL_GRAPHS, CALL_GRAPHS_PATH
 import exjson
+from exjson.scripting import extensions
 
 __author__ = 'prods'
 __project__ = 'exjson'
@@ -736,6 +736,21 @@ class PyXJSONTests(TestCase):
                 {"id": "AXX-5"}
             ]
         })
+
+    def test_loads_json_evaluate_register_custom_extension_function(self):
+        def custom_add(*args):
+            result = 0
+            for r in args:
+                result = result + args[r]
+            return result
+        extensions.register_extension_function("add", custom_add)
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                "a": "$.test(10, 20)"
+            }""", "register_custom_extension_function")
+        self.assertDictEqual(result, {
+                "a": "30"
+            })
 
     def test_load_json_evaluate_root_references(self):
         result = tests.generate_call_graph(
