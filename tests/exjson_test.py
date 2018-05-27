@@ -760,7 +760,7 @@ class PyXJSONTests(TestCase):
                                     "deep4": "$root.third.test1"
                                 }
                             }
-                            }""", "references")
+                            }""", "root_references")
         self.assertDictEqual(result, {
             "prefix": "A",
             "first": [
