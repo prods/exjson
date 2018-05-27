@@ -778,7 +778,7 @@ class PyXJSONTests(TestCase):
                 "test3": {
                     "deep1": 44,
                     "deep2": False,
-                    "deep3": "3",
+                    "deep3": "A",
                     "deep4": "23"
                 }
             }

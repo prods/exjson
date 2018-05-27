@@ -66,11 +66,9 @@ def _parse_reference_calls(source: str):
     return updated_source
 
 
-def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool = True):
+def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extract_ref_calls: bool = True):
     tree = {}
     ref_tree = {}
-    if outer_tree is not None:
-        tree = {**outer_tree}
     i = 0
     done = False
     working_source = source
@@ -79,12 +77,12 @@ def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool 
         if i == len(working_source):
             done = True
             continue
+        src_char = working_source[i]
+        if src_char in [' ', '\n', '\t']:
+            i = i + 1
+            continue
         # Find property assignments
-        if working_source[i] == ":":
-            source_key_start_index = 0
-            source_value_end_index = 0
-            source_key = ""
-            source_value = ""
+        elif src_char == ":":
             source_key_scope = working_source[:i]
             try:
                 source_key_start_index = source_key_scope.rindex(',')
@@ -93,6 +91,8 @@ def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool 
             source_key = source_key_scope[source_key_start_index:].replace('"', '').replace(' ', '').replace('\t',
                                                                                                              '').replace(
                 '\n', '').replace('{', '').replace(',', '')
+            if parent is not None and parent != "":
+                source_key = f"{parent}.{source_key}"
             source_value_scope = working_source[i:]
             # Find arrays
             if source_value_scope.replace(' ', '').replace('\t', '')[1] == '[':
@@ -104,12 +104,13 @@ def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool 
                     source_value_end_index = source_value_scope.index(",")
                 except:
                     source_value_end_index = source_value_scope.index("}")
-            source_value = source_value_scope[1:source_value_end_index].strip(' ').strip('\t').strip('"')
+            source_value = source_value_scope[1:source_value_end_index].strip(' ').strip('\t').strip('\n').strip('"')
             # Process Object
             if source_value[0] == "{" and source_value[-1] == "}":
-                inner_object_tree = _extract_tree(source_value, tree)
+                inner_object_tree = _extract_tree(source_value, source_key, tree)
                 for inner_object_key in inner_object_tree[0]:
-                    tree[f"{source_key}.{inner_object_key}"] = inner_object_tree[0][inner_object_key]
+                    full_key = f"{source_key}.{inner_object_key.replace(source_key, '')}".replace("..", ".")
+                    tree[full_key] = inner_object_tree[0][inner_object_key]
                     # Extract Ref Tree
                     if extract_ref_calls:
                         if inner_object_tree[1] is not None:
@@ -120,8 +121,11 @@ def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool 
             tree[source_key] = source_value
             # Extract References
             if extract_ref_calls:
-                ref_call = _extract_ref_call(source_value, tree.keys())
-                if ref_call is not None and ref_call[1] in tree.keys():
+                tree_keys = [k for k in tree.keys()]
+                if outer_tree is not None:
+                    tree_keys = tree_keys + [k for k in outer_tree.keys()]
+                ref_call = _extract_ref_call(source_value, tree_keys)
+                if ref_call is not None and ref_call[1] in tree_keys:
                     if ref_call[0] not in ref_tree:
                         ref_tree[ref_call[0]] = ref_call[1]
             # Reset
@@ -135,27 +139,26 @@ def _extract_tree(source: str, outer_tree: dict = None, extract_ref_calls: bool 
 
 def _extract_ref_call(source: str, keys: list):
     if "$this." in source or "$parent." in source or "$root." in source:
-        ref_start = -1
-        ref_prefix_end = -1
         ref_call_without_prefix = ""
-        ref_call_prefix = ""
-        for i in range(len(source)):
-            if source[i] == "$":
-                ref_start = i
-                ref_prefix_end = source[i:].index(".") + 1
-                ref_call_prefix = source[i:ref_prefix_end - 1]
-                #print(f"++++ RS:{ref_start} PE:{ref_prefix_end} P:{ref_call_prefix} ")
-            if ref_start >= 0:
-                if ref_call_without_prefix not in keys:
-                    if ref_prefix_end > 0 and i >= ref_prefix_end:
-                        if source[i] in ['"']:
-                            break
-                        ref_call_without_prefix = ref_call_without_prefix + source[i]
-                else:
-                    break
-        #print(f">>>>> {ref_call_prefix} {ref_call_without_prefix}")
+        ref_start_index = source.index("$")
+        working_source = source[ref_start_index:].replace('"', "").strip(' ')
+        try:
+            ref_prefix_end = working_source.index(".")
+        except:
+            return None
+        ref_call_prefix = working_source[:ref_prefix_end]
+        working_source = working_source[ref_prefix_end+1:]
+        i = 0
+        while i < len(working_source):
+            if working_source[i] in ['"', '\n', '\t', ' ', '$', '}', ']', ',', '|']:
+                break
+            ref_call_without_prefix = ref_call_without_prefix + working_source[i]
+            if ref_call_without_prefix in keys:
+                break
+            i = i + 1
         if ref_call_prefix != "" and ref_call_without_prefix != "":
             ref_call = f"{ref_call_prefix}.{ref_call_without_prefix}"
+            # print(f">>>>> {ref_call} {ref_call_prefix} |{ref_call_without_prefix}|")
             return (ref_call, ref_call_without_prefix, ref_call_prefix)
         else:
             return None
