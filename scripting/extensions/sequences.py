@@ -23,7 +23,7 @@ def _sequence(sequence_key, format=None, step=None):
         _SEQUENCE_CACHE[sequence_key] = 0
     if step is None:
         step = 1
-    _SEQUENCE_CACHE[sequence_key] += step
+    _SEQUENCE_CACHE[sequence_key] += int(step)
     # If format is provided using {0} placeholder apply it
     if format is not None and format != "":
         return format.format(_SEQUENCE_CACHE[sequence_key])

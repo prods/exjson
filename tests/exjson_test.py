@@ -662,6 +662,48 @@ class PyXJSONTests(TestCase):
             ]
         })
 
+    def test_load_json_evaluate_sequence_single_int_with_padding(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                               "first": [
+                                   { "id": "$.sequence('A','{0:0>4}')" },
+                                   { "id": "$.sequence('A','{0:0>4}')" },
+                                   { "id": "$.sequence('A','{0:0>4}')" },
+                                   { "id": "$.sequence('A','{0:0>4}')" }
+                               ],
+                               "second": "$.sequence('B')"
+                               }""", "sequence_single_int_with_padding")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": "0001"},
+                {"id": "0002"},
+                {"id": "0003"},
+                {"id": "0004"}
+            ],
+            "second": "1"
+        })
+
+    def test_load_json_evaluate_sequence_single_int_with_steps(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                               "first": [
+                                   { "id": "$.sequence('A', null, 2)" },
+                                   { "id": "$.sequence('A', null, 2)" },
+                                   { "id": "$.sequence('A', null, 2)" },
+                                   { "id": "$.sequence('A', null, 2)" }
+                               ],
+                               "second": "$.sequence('B')"
+                               }""", "sequence_single_int_with_steps")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": "2"},
+                {"id": "4"},
+                {"id": "6"},
+                {"id": "8"}
+            ],
+            "second": "1"
+        })
+
     def test_load_json_evaluate_sequence_multiple_int(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
