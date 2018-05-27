@@ -6,7 +6,6 @@ from dateutil.tz import tzlocal
 
 import tests
 import exjson
-from exjson.scripting import extensions
 
 __author__ = 'prods'
 __project__ = 'exjson'
@@ -741,9 +740,9 @@ class PyXJSONTests(TestCase):
         def custom_add(*args):
             result = 0
             for r in args:
-                result = result + args[r]
+                result = result + int(r)
             return result
-        extensions.register_extension_function("add", custom_add)
+        exjson.register_custom_scripting_extension("test", custom_add)
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                 "a": "$.test(10, 20)"

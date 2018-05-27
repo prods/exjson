@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from scripting import parse
+from scripting import parse, extensions
 
 _JSON_OPENING_CHARS = [',', '[', '{', ':']
 _JSON_CLOSING_CHARS = [',', '}', ']']
@@ -66,6 +66,10 @@ def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
                       allow_nan=allow_nan, cls=cls, indent=indent, separators=separators,
                       default=default, sort_keys=sort_keys, **kw)
 
+
+def register_custom_scripting_extension(name, fn):
+    """Registers a custom scripting extension function"""
+    return extensions.register_extension_function(name, fn)
 
 def _include_files(include_files_path, string, encoding=None, cache=None, error_on_file_not_found=False,
                    parent_file_paths=None):
