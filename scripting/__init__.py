@@ -59,9 +59,6 @@ def _parse_reference_calls(source: str):
     ref_tree = base[2]
     if ref_calls is not None and len(ref_calls) > 0:
         for r in ref_calls:
-            if '$this.' in ref_calls[r] or '$parent.' in ref_calls:
-                # TODO: Implement mapping based on ref_tree
-                pass
             updated_source = updated_source.replace(r, source_tree[ref_calls[r]])
             # Update Tree when a value ref_call is updated. This guarantees references of references to get the initially referenced value.
             source_tree = _extract_tree(updated_source, extract_ref_calls=False)[0]
@@ -133,9 +130,9 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
                     tree_keys = tree_keys + [k for k in outer_tree.keys()]
                 ref_call = _extract_ref_call(source_value, tree_keys, source_key)
                 ref_call = _get_abs_ref_call_from_ref_tree(ref_tree, ref_call)
-                if ref_call is not None and ref_call[1] in tree_keys:
+                if ref_call is not None and ref_call[5] in tree_keys:
                     if ref_call[0] not in ref_list:
-                        ref_list[ref_call[0]] = ref_call[1]
+                        ref_list[ref_call[0]] = ref_call[5]
             # Reset
             working_source = working_source[i + source_value_end_index:]
             i = 0
@@ -190,13 +187,13 @@ def _get_abs_ref_tree_entry(source_key: str, parent_key: str):
 def _get_abs_ref_call_from_ref_tree(ref_tree:dict, ref_call:tuple):
     if ref_tree is not None and ref_call is not None:
         if '$this' in ref_call[2]:
-            return ref_call + (ref_tree[ref_call[3]]["this"],)
+            return ref_call + (ref_tree[ref_call[3]]["this"], f"{ref_tree[ref_call[3]]['this']}.{ref_call[1]}")
         elif '$parent' in ref_call[2]:
-            return ref_call + (ref_tree[ref_call[3]]["this"],)
+            return ref_call + (ref_tree[ref_call[3]]["this"], f"{ref_tree[ref_call[3]]['parent']}.{ref_call[1]}")
         else:
-            return ref_call + ('$root',)
+            return ref_call + (ref_call[1],ref_call[1])
     else:
         if ref_call is not None:
-            return ref_call + ('$root',)
+            return ref_call + (ref_call[1],ref_call[1])
         else:
             return None
