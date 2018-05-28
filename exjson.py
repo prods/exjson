@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import json
 import os
@@ -97,7 +98,7 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                     default_value = None
                     file_expected_checksum = None
                     if ":" in file_name:
-                        values = file_name.split(":")
+                        values = file_name.split(":",1)
                         property_name = values[0]
                         file_name = values[1]
                         if '|' in file_name:
@@ -175,22 +176,45 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
         raise IncludeError(exception=ex)
 
 def _download_file(url, local_path):
-    local_file_path = os.path.join(local_path, os.path.basename(url))
+    file_name = url[url.rfind("/")+1:]
+    if not file_name.endswith('.json'):
+        file_name = f"{file_name}.json"
+    info_file_name = file_name.replace('.json', '.http.json')
+    local_file_path = os.path.join(local_path, file_name)
+    info_file_path = os.path.join(local_path, info_file_name)
     try:
+        file_size = 0
+        file_checksum = ""
         with urllib.request.urlopen(url) as r:
             with open(local_file_path, 'wb') as f:
                 data = r.read()
                 f.write(data)
+                file_size = len(data)
+            with open(info_file_path, 'w') as f:
+                data = {
+                    "date": datetime.datetime.utcnow().isoformat(),
+                    "url": url,
+                    "file_name": file_name,
+                    "size": file_size,
+                    "checksum": _get_file_checksum(local_file_path)
+                }
+                f.write(json.dumps(data))
     except Exception as ex:
         raise IOError(f"Include file could not be downloaded from {url}. Ready: {ex}.")
     return local_file_path
 
-def _check_file_checksum(file_path, checksum):
+
+def _get_file_checksum(file_path):
     hash_md5 = hashlib.md5()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
-    return hash_md5.hexdigest() == checksum
+    return hash_md5.hexdigest()
+
+
+def _check_file_checksum(file_path, checksum):
+    return _get_file_checksum(file_path).lower() == checksum.lower()
+
 
 def _process_value_calls(json_source, error_on_invalid_value=False):
     cached_values = {}

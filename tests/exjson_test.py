@@ -148,7 +148,7 @@ class EXJSONTestScenarios(object):
             "Name": "First Stage",
             "Description": "Retrieves Sample Data from file",
             "Sequence_Id": 1,
-            /* #INCLUDE <Post:https://jsonplaceholder.typicode.com/posts/1|{}> */
+            /* #INCLUDE <Post:https://raw.githubusercontent.com/prods/exjson/master/tests/samples/clean-simple.json|{}> */
             "Enabled": true
         }
         """, encoding='utf-8'), {
@@ -156,10 +156,39 @@ class EXJSONTestScenarios(object):
             "Description": "Retrieves Sample Data from file",
             "Sequence_Id": 1,
             "Post": {
-              "userId": 1,
-              "id": 1,
-              "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-              "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+              "Name": "Sample Values",
+              "Enabled": True,
+              "Values": [
+                "A",
+                "AB",
+                "ABC"
+              ],
+              "Count": 3
+            },
+            "Enabled": True
+        })
+
+    def loads_json_include_from_http_url_validate_checksum(self):
+        return (exjson.loads("""{
+            "Name": "First Stage",
+            "Description": "Retrieves Sample Data from file",
+            "Sequence_Id": 1,
+            /* #INCLUDE <Post:https://raw.githubusercontent.com/prods/exjson/master/tests/samples/clean-simple.json|{}|cf5c54e08ad3c8c57d1d98e7622e8e93> */
+            "Enabled": true
+        }
+        """, encoding='utf-8'), {
+            "Name": "First Stage",
+            "Description": "Retrieves Sample Data from file",
+            "Sequence_Id": 1,
+            "Post": {
+              "Name": "Sample Values",
+              "Enabled": True,
+              "Values": [
+                "A",
+                "AB",
+                "ABC"
+              ],
+              "Count": 3
             },
             "Enabled": True
         })
@@ -570,6 +599,10 @@ class PyXJSONTests(TestCase):
 
     def test_loads_json_include_from_http_url(self):
         result = tests.generate_call_graph(self._scenarios.loads_json_include_from_http_url)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_include_from_http_url_validate_checksum(self):
+        result = tests.generate_call_graph(self._scenarios.loads_json_include_from_http_url_validate_checksum)
         self.assertDictEqual(result[0], result[1])
 
     # Multi-Level Include
