@@ -1,6 +1,11 @@
+import datetime
+import hashlib
 import json
 import os
 import re
+
+import urllib.request
+
 from scripting import parse, extensions
 
 _JSON_OPENING_CHARS = [',', '[', '{', ':']
@@ -86,20 +91,30 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                 for value in match.groups():
                     if value is None:
                         continue
-                    included_source = ""
+                    http_download = False
                     include_call_string = str(match.group())
                     property_name = ""
                     file_name = _remove_enclosing_chars(value)
                     default_value = None
+                    file_expected_checksum = None
                     if ":" in file_name:
-                        values = file_name.split(":")
+                        values = file_name.split(":",1)
                         property_name = values[0]
                         file_name = values[1]
                         if '|' in file_name:
                             file_properties = file_name.split('|')
+                            file_properties_count = len(file_properties)
                             file_name = file_properties[0].strip(' ')
-                            default_value = file_properties[1].strip(' ')
-                    include_file_path = os.path.normpath(os.path.join(include_files_path, file_name))
+                            if file_properties_count > 1:
+                                default_value = file_properties[1].strip(' ')
+                            elif file_properties >= 2:
+                                file_expected_checksum = file_properties[2].strip(' ')
+                    if 'http://' in file_name or 'https://' in file_name:
+                        http_download = True
+                        include_file_path = _download_file(file_name, include_files_path)
+                        # TODO: Create file with download information and checksum
+                    else:
+                        include_file_path = os.path.normpath(os.path.join(include_files_path, file_name))
                     if os.path.abspath(include_file_path):
                         # Cache File if not already cached.
                         if include_file_path not in cache:
@@ -111,6 +126,9 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                                     cache[include_file_path] = {
                                         "src": ""
                                     }
+                                    if file_expected_checksum is not None:
+                                        if not _check_file_checksum(include_file_path, file_expected_checksum):
+                                            raise IOError("Include File has checksum does not match expected.")
                                     included_file_source = _include_files(include_files_path, f.read(), encoding, cache,
                                                                           error_on_file_not_found,
                                                                           parent_file_list)
@@ -156,6 +174,46 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
         raise
     except Exception as ex:
         raise IncludeError(exception=ex)
+
+def _download_file(url, local_path):
+    file_name = url[url.rfind("/")+1:]
+    if not file_name.endswith('.json'):
+        file_name = f"{file_name}.json"
+    info_file_name = file_name.replace('.json', '.http.json')
+    local_file_path = os.path.join(local_path, file_name)
+    info_file_path = os.path.join(local_path, info_file_name)
+    try:
+        file_size = 0
+        file_checksum = ""
+        with urllib.request.urlopen(url) as r:
+            with open(local_file_path, 'wb') as f:
+                data = r.read()
+                f.write(data)
+                file_size = len(data)
+            with open(info_file_path, 'w') as f:
+                data = {
+                    "date": datetime.datetime.utcnow().isoformat(),
+                    "url": url,
+                    "file_name": file_name,
+                    "size": file_size,
+                    "checksum": _get_file_checksum(local_file_path)
+                }
+                f.write(json.dumps(data))
+    except Exception as ex:
+        raise IOError(f"Include file could not be downloaded from {url}. Ready: {ex}.")
+    return local_file_path
+
+
+def _get_file_checksum(file_path):
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def _check_file_checksum(file_path, checksum):
+    return _get_file_checksum(file_path).lower() == checksum.lower()
 
 
 def _process_value_calls(json_source, error_on_invalid_value=False):
