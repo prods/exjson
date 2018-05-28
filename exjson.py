@@ -90,10 +90,15 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                     include_call_string = str(match.group())
                     property_name = ""
                     file_name = _remove_enclosing_chars(value)
+                    default_value = None
                     if ":" in file_name:
                         values = file_name.split(":")
                         property_name = values[0]
                         file_name = values[1]
+                        if '|' in file_name:
+                            file_properties = file_name.split('|')
+                            file_name = file_properties[0].strip(' ')
+                            default_value = file_properties[1].strip(' ')
                     include_file_path = os.path.normpath(os.path.join(include_files_path, file_name))
                     if os.path.abspath(include_file_path):
                         # Cache File if not already cached.
@@ -113,6 +118,9 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                             except IOError as ex:
                                 if error_on_file_not_found:
                                     raise IOError("Included file '{0}' was not found.".format(include_file_path))
+                                else:
+                                    if default_value is not None:
+                                        cache[include_file_path] = { "src": default_value }
             # Extract content from include file removing comments, end of lines and tabs
             if include_file_path in cache:
                 included_source = cache[include_file_path]["src"]

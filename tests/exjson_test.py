@@ -121,6 +121,26 @@ class EXJSONTestScenarios(object):
             "Enabled": True
         })
 
+    def loads_json_include_default_value(self):
+        return (exjson.loads("""{
+            "Name": "First Stage",
+            "Description": "Retrieves Sample Data from file",
+            "Sequence_Id": 1,
+            "Parameters": {
+            },
+            /* #INCLUDE <Steps:step_not_found.json|[]> */
+            "Enabled": true
+        }
+        """, encoding='utf-8'), {
+            "Name": "First Stage",
+            "Description": "Retrieves Sample Data from file",
+            "Sequence_Id": 1,
+            "Parameters": {
+            },
+            "Steps": [],
+            "Enabled": True
+        })
+
     def load_json_in_different_positions(self):
         return (exjson.load("./samples/multi-include.json", encoding='utf-8'), {
             "Name": "Test Name",
@@ -519,6 +539,10 @@ class PyXJSONTests(TestCase):
                     json_source)
             except Exception as ex:
                 self.fail(ex)
+        self.assertDictEqual(result[0], result[1])
+
+    def test_loads_json_include_default_value(self):
+        result = tests.generate_call_graph(self._scenarios.loads_json_include_default_value)
         self.assertDictEqual(result[0], result[1])
 
     # Multi-Level Include

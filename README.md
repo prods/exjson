@@ -660,4 +660,7 @@ pip install pycallgraph
 ```
 
 ### Road Map:
-* Check Issues tagged as `next release` or `deffered` for details.
+* Better unit testing coverage.
+* Stabilize and resolve any bugs.
+* Support Multi-File Serialization.
+* For More check [Issues](https://github.com/prods/exjson/issues) tagged as `next release` or `deffered` for details.
