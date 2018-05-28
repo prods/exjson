@@ -38,6 +38,7 @@ _DATETIME_FORMAT_MAP = [
     (30, "Z", "%Y-%m-%dT%H:%m:%s.%f%z")  # Full ISO-8601
 ]
 
+_formats_cache = {}
 
 def _get_now():
     """Gets current date, time and local timezone"""
@@ -145,10 +146,11 @@ def _add_time(date, *args):
 
 def _format(dt: datetime, format=None):
     """Formats the provided datetime. Default ISO8601+TZ."""
+    global _formats_cache
     if format is not None:
-        format = _convert_universal_format(format)
-        print(format)
-        return dt.strftime(format)
+        if format not in _formats_cache.keys():
+            _formats_cache[format] = _convert_universal_format(format)
+        return dt.strftime(_formats_cache[format])
     if dt.utcoffset() is None:
         return dt.isoformat() + "-00:00"
     else:
