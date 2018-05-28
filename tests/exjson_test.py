@@ -1,13 +1,12 @@
-from http import server
 import json
 import re
 from datetime import datetime, timedelta
-from http.server import BaseHTTPRequestHandler
 from unittest import TestCase
+
 from dateutil.tz import tzlocal
 
-import tests
 import exjson
+import tests
 
 __author__ = 'prods'
 __project__ = 'exjson'
@@ -156,14 +155,14 @@ class EXJSONTestScenarios(object):
             "Description": "Retrieves Sample Data from file",
             "Sequence_Id": 1,
             "Post": {
-              "Name": "Sample Values",
-              "Enabled": True,
-              "Values": [
-                "A",
-                "AB",
-                "ABC"
-              ],
-              "Count": 3
+                "Name": "Sample Values",
+                "Enabled": True,
+                "Values": [
+                    "A",
+                    "AB",
+                    "ABC"
+                ],
+                "Count": 3
             },
             "Enabled": True
         })
@@ -181,14 +180,14 @@ class EXJSONTestScenarios(object):
             "Description": "Retrieves Sample Data from file",
             "Sequence_Id": 1,
             "Post": {
-              "Name": "Sample Values",
-              "Enabled": True,
-              "Values": [
-                "A",
-                "AB",
-                "ABC"
-              ],
-              "Count": 3
+                "Name": "Sample Values",
+                "Enabled": True,
+                "Values": [
+                    "A",
+                    "AB",
+                    "ABC"
+                ],
+                "Count": 3
             },
             "Enabled": True
         })
@@ -740,7 +739,6 @@ class PyXJSONTests(TestCase):
                         result_format_match["sec"] is not None and
                         result[0]["date"].endswith(tz_formatted))
 
-
     def test_load_json_evaluate_sequence_single_int(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
@@ -882,14 +880,15 @@ class PyXJSONTests(TestCase):
             for r in args:
                 result = result + int(r)
             return result
+
         exjson.register_custom_scripting_extension("test", custom_add)
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                 "a": "$.test(10, 20)"
             }""", "register_custom_extension_function")
         self.assertDictEqual(result, {
-                "a": "30"
-            })
+            "a": "30"
+        })
 
     def test_load_json_evaluate_root_references(self):
         result = tests.generate_call_graph(
@@ -1032,3 +1031,24 @@ class PyXJSONTests(TestCase):
             }
         })
 
+    def test_load_json_evaluate_file_checksum(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "file": "../LICENSE",
+                            "checksum": "$.file_checksum('../LICENSE')"
+                            }""", "file_checksum_md5")
+        self.assertDictEqual(result, {
+            "file": "../LICENSE",
+            "checksum": "051c67aea02292bebcc770ceef8e6838"
+        })
+
+    def test_load_json_evaluate_file_checksum_sh1(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "file": "../LICENSE",
+                            "checksum": "$.file_checksum('../LICENSE','sha1')"
+                            }""", "file_checksum_sha1")
+        self.assertDictEqual(result, {
+            "file": "../LICENSE",
+            "checksum": "5446fd655834b1f2bd345b5f4f1e02c3bbc7bc5d"
+        })
