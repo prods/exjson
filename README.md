@@ -602,6 +602,33 @@ EXJSON supports dynamic values by using an extensible scripting engine based on 
             "value1": "1",
           }
           ```
+  * **FILE_CHECKSUM()**
+   
+     Calculates MD5 or SHA1 checksum for the specified file. The file path should be relative to the path where the JSON file is located if loaded or included. Relative to the executing python script if using loads from a JSON string. If no `algorithm` is provided `md5` will be used by default.
+         
+       Signature
+       ```json
+        $.file_checksum([required]file_path,  [optional]algorithm)
+       ```
+       Supported algorithms are `md5` and `sha1`.
+       
+       Usage
+       
+          ```json
+          {
+            "filename": "../file.db",
+            "checksum": "$.file_checksum('../file.db', 'md5')"
+          }
+          ```
+          
+       Result
+        
+          ```json
+           {
+            "filename": "../file.db",
+            "checksum": "ceb4c1f4b28bd59b941573d8a41f14d3"
+          }
+          ```
 
 ##### How to Create a custom scripting extension function and register it at Run-Time.
 While standard functions can be added through issues (requests) or pull requests into the version branch you may want to use some functions that are too specific to your scenario that cannot be classified as standard. In this case you may want to register them at run-time.
@@ -717,5 +744,6 @@ pip install pycallgraph
 ### Road Map:
 * Better unit testing coverage.
 * Stabilize and resolve any bugs.
+* Segregate and make better scripting extension documentation.
 * Support Multi-File Serialization.
 * For More check [Issues](https://github.com/prods/exjson/issues) tagged as `next release` or `deffered` for details.
