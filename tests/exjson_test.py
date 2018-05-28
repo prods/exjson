@@ -1,15 +1,14 @@
-import errno
 import json
-import os
-from os import path
+import re
+from datetime import datetime, timedelta
 from unittest import TestCase
+from dateutil.tz import tzlocal
 
 import tests
-from tests import tools, GENERATE_CALL_GRAPHS, CALL_GRAPHS_PATH
 import exjson
 
 __author__ = 'prods'
-__project__ = 'xjson'
+__project__ = 'exjson'
 
 
 class EXJSONTestScenarios(object):
@@ -395,6 +394,14 @@ class EXJSONTestScenarios(object):
     def loads_json_without_property_override_raises_an_error(self, json_source):
         return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
 
+    def loads_json_evaluate(self, json_source, test_name=None):
+        return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
+
+    def loads_json_evaluate_raw_date_value(self, json_source, test_name=None):
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+            "date": datetime.now(tzlocal()).isoformat()
+        })
+
 
 class PyXJSONTests(TestCase):
 
@@ -443,14 +450,14 @@ class PyXJSONTests(TestCase):
         with open("./samples/pipeline.stage.001.json", encoding="utf-8") as f:
             json_source = f.read()
         result = tests.generate_call_graph(self._scenarios.loads_json_string_with_comments,
-                                          json_source)
+                                           json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_with_comments_and_included_files(self):
         with open("./samples/pipeline.json", encoding="utf-8") as f:
             json_source = f.read()
         result = tests.generate_call_graph(self._scenarios.loads_json_with_comments_and_included_files,
-                                          json_source)
+                                           json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_in_different_positions_and_using_properties_overrides(self):
@@ -473,7 +480,6 @@ class PyXJSONTests(TestCase):
             # 2nd Element on line 3 is invalid (missing property name)
             self.assertTrue("line 3" in str(ex))
 
-
     def test_loads_json_includes_followed_by_comment_before_EOF(self):
         json_source = """{
             // This tests that the include ignores comments
@@ -493,7 +499,6 @@ class PyXJSONTests(TestCase):
             self._scenarios.loads_json_includes_followed_by_comment_before_EOF, json_source)
         self.assertDictEqual(result[0], result[1])
 
-
     def test_loads_json_missing_include_raises_an_error(self):
         result = None
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
@@ -504,7 +509,6 @@ class PyXJSONTests(TestCase):
             except Exception as ex:
                 result = ex
         self.assertIsNotNone(result)
-
 
     def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
@@ -517,13 +521,11 @@ class PyXJSONTests(TestCase):
                 self.fail(ex)
         self.assertDictEqual(result[0], result[1])
 
-
     # Multi-Level Include
 
     def test_loads_json_with_multi_level_include(self):
         result = tests.generate_call_graph(self._scenarios.loads_json_with_multi_level_include)
         self.assertDictEqual(result[0], result[1])
-
 
     def test_loads_json_with_multiple_level_recursion_detection(self):
         try:
@@ -532,3 +534,417 @@ class PyXJSONTests(TestCase):
             self.fail()
         except exjson.IncludeRecursionError as ex:
             self.assertTrue("multi-level-include-recursive-first.json" in str(ex))
+
+    # Dynamic and Reference Value Evaluation
+
+    def test_loads_json_evaluate_uuid_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+            "hash": "$.uuid()"
+            }""", "uuid")
+        self.assertIsNotNone(result["hash"], "uuid")
+
+    def test_loads_json_evaluate_md5_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+            "hash": "$.md5()"
+            }""", "md5")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_md5_of_string_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+               "hash": "$.md5('test string')"
+               }""", "md5_of_string_value")
+        self.assertTrue(result["hash"] == '6f8db599de986fab7a21625b7916589c')
+
+    def test_loads_json_evaluate_sha1_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+             "hash": "$.sha1()"
+             }""", "sha1")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_sha256_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+             "hash": "$.sha256()"
+             }""", "sha256")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_sha512_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+             "hash": "$.sha512()"
+             }""", "sha512")
+        self.assertIsNotNone(result["hash"])
+
+    def test_loads_json_evaluate_raw_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now()"
+            }""")
+        iso8601 = re.compile(
+            r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
+        result_format_match = iso8601.match(result[0]["date"])
+        print(result[0]["date"])
+
+        tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
+        tz_offset_hours_sep = tz_offset_hours.find('.')
+        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
+
+        self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
+                        result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
+                        result_format_match["day"] == str(datetime.now().day).rjust(2, '0') and
+                        result_format_match["hour"] == str(datetime.now().hour).rjust(2, '0') and
+                        result_format_match["min"] == str(datetime.now().minute).rjust(2, '0') and
+                        result_format_match["sec"] is not None and
+                        result[0]["date"].endswith(tz_formatted))
+
+    def test_loads_json_evaluate_raw_utc_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now().utc()"
+            }""")
+        iso8601 = re.compile(
+            r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
+        result_format_match = iso8601.match(result[0]["date"])
+        print(result[0]["date"])
+        self.assertTrue(result_format_match["year"] == str(datetime.utcnow().year) and
+                        result_format_match["month"] == str(datetime.utcnow().month).rjust(2, '0') and
+                        result_format_match["day"] == str(datetime.utcnow().day).rjust(2, '0') and
+                        result_format_match["hour"] == str(datetime.utcnow().hour).rjust(2, '0') and
+                        result_format_match["min"] == str(datetime.utcnow().minute).rjust(2, '0') and
+                        result_format_match["sec"] is not None and
+                        result[0]["date"].endswith("-00:00"))
+
+    def test_loads_json_evaluate_python_formatted_now_add_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+                    "date": "$.now('yyyy-MM-dd HH:mm')"
+                    }""", "formatted_now_add_date_value")
+        v = datetime.now().strftime("%Y-%m-%d %H:%M")
+        self.assertTrue(result[0]["date"] == v)
+
+    def test_loads_json_evaluate_python_formatted_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+                    "date": "$.now().add(days=1,'yyyy-MM-dd HH:mm')"
+                    }""", "formatted")
+        v = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
+        self.assertTrue(result[0]["date"] == v)
+
+    def test_loads_json_evaluate_raw_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now()"
+            }""")
+        iso8601 = re.compile(
+            r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
+        result_format_match = iso8601.match(result[0]["date"])
+        print(result[0]["date"])
+
+        tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
+        tz_offset_hours_sep = tz_offset_hours.find('.')
+        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
+
+        self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
+                        result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
+                        result_format_match["day"] == str(datetime.now().day).rjust(2, '0') and
+                        result_format_match["hour"] == str(datetime.now().hour).rjust(2, '0') and
+                        result_format_match["min"] == str(datetime.now().minute).rjust(2, '0') and
+                        result_format_match["sec"] is not None and
+                        result[0]["date"].endswith(tz_formatted))
+
+
+    def test_load_json_evaluate_sequence_single_int(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "first": [
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') }
+                            ]
+                            }""", "sequence_single_int")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": 1},
+                {"id": 2},
+                {"id": 3},
+                {"id": 4}
+            ]
+        })
+
+    def test_load_json_evaluate_sequence_single_int_with_padding(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                               "first": [
+                                   { "id": "$.sequence('A','{0:0>4}')" },
+                                   { "id": "$.sequence('A','{0:0>4}')" },
+                                   { "id": "$.sequence('A','{0:0>4}')" },
+                                   { "id": "$.sequence('A','{0:0>4}')" }
+                               ],
+                               "second": "$.sequence('B')"
+                               }""", "sequence_single_int_with_padding")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": "0001"},
+                {"id": "0002"},
+                {"id": "0003"},
+                {"id": "0004"}
+            ],
+            "second": "1"
+        })
+
+    def test_load_json_evaluate_sequence_single_int_with_steps(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                               "first": [
+                                   { "id": "$.sequence('A', null, 2)" },
+                                   { "id": "$.sequence('A', null, 2)" },
+                                   { "id": "$.sequence('A', null, 2)" },
+                                   { "id": "$.sequence('A', null, 2)" }
+                               ],
+                               "second": "$.sequence('B')"
+                               }""", "sequence_single_int_with_steps")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": "2"},
+                {"id": "4"},
+                {"id": "6"},
+                {"id": "8"}
+            ],
+            "second": "1"
+        })
+
+    def test_load_json_evaluate_sequence_multiple_int(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "first": [
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') },
+                                { "id": $.sequence('A') }
+                            ],
+                            "second": [
+                                { "id": $.sequence('B') },
+                                { "id": $.sequence('B') },
+                                { "id": $.sequence('B') },
+                                { "id": $.sequence('B') }
+                            ],
+                            "third": [
+                                { "id": $.sequence('A') }
+                            ]
+                            }""", "sequence_multiple_int")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": 1},
+                {"id": 2},
+                {"id": 3},
+                {"id": 4}
+            ],
+            "second": [
+                {"id": 1},
+                {"id": 2},
+                {"id": 3},
+                {"id": 4}
+            ],
+            "third": [
+                {"id": 5}
+            ]
+        })
+
+    def test_loads_json_evaluate_sequence_multiple_string(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "first": [
+                                { "id": "AX-$.sequence('A')" },
+                                { "id": "AX-$.sequence('A')" },
+                                { "id": "AX-$.sequence('A')" },
+                                { "id": "AX-$.sequence('A')" }
+                            ],
+                            "second": [
+                                { "id": "BX-$.sequence('B')" },
+                                { "id": "BX-$.sequence('B')" },
+                                { "id": "BX-$.sequence('B')" },
+                                { "id": "BX-$.sequence('B')" }
+                            ],
+                            "third": [
+                                { "id": "AXX-$.sequence('A')" }
+                            ]
+                            }""", "sequence_multiple_string")
+        self.assertDictEqual(result, {
+            "first": [
+                {"id": "AX-1"},
+                {"id": "AX-2"},
+                {"id": "AX-3"},
+                {"id": "AX-4"}
+            ],
+            "second": [
+                {"id": "BX-1"},
+                {"id": "BX-2"},
+                {"id": "BX-3"},
+                {"id": "BX-4"}
+            ],
+            "third": [
+                {"id": "AXX-5"}
+            ]
+        })
+
+    def test_loads_json_evaluate_register_custom_extension_function(self):
+        def custom_add(*args):
+            result = 0
+            for r in args:
+                result = result + int(r)
+            return result
+        exjson.register_custom_scripting_extension("test", custom_add)
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                "a": "$.test(10, 20)"
+            }""", "register_custom_extension_function")
+        self.assertDictEqual(result, {
+                "a": "30"
+            })
+
+    def test_load_json_evaluate_root_references(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "prefix": "A",
+                            "first": [
+                                { "id": "A1" },
+                                { "id": "A2" },
+                                { "id": "A3" },
+                                { "id": "$root.prefix4" }
+                            ],
+                            "second": "$root.prefix",
+                            "third": {
+                                "test1": 23,
+                                "test2": [
+                                    1,2,3
+                                ],
+                                "test3": {
+                                    "deep1": 44,
+                                    "deep2": false,
+                                    "deep3": "$root.second",
+                                    "deep4": "$root.third.test1"
+                                }
+                            }
+                            }""", "root_references")
+        self.assertDictEqual(result, {
+            "prefix": "A",
+            "first": [
+                {"id": "A1"},
+                {"id": "A2"},
+                {"id": "A3"},
+                {"id": "A4"}
+            ],
+            "second": "A",
+            "third": {
+                "test1": 23,
+                "test2": [
+                    1, 2, 3
+                ],
+                "test3": {
+                    "deep1": 44,
+                    "deep2": False,
+                    "deep3": "A",
+                    "deep4": "23"
+                }
+            }
+        })
+
+    def test_load_json_evaluate_parent_references(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "prefix": "A",
+                            "first": [
+                                { "id": "A1" },
+                                { "id": "A2" },
+                                { "id": "A3" },
+                                { "id": "$root.prefix4" }
+                            ],
+                            "second": "$root.prefix",
+                            "third": {
+                                "test1": 23,
+                                "test2": [
+                                    1,2,3
+                                ],
+                                "test3": {
+                                    "deep1": 44,
+                                    "deep2": false,
+                                    "deep3": "$root.secondB",
+                                    "deep4": "AZ-$parent.test1X"
+                                }
+                            }
+                            }""", "parent_references")
+        self.assertDictEqual(result, {
+            "prefix": "A",
+            "first": [
+                {"id": "A1"},
+                {"id": "A2"},
+                {"id": "A3"},
+                {"id": "A4"}
+            ],
+            "second": "A",
+            "third": {
+                "test1": 23,
+                "test2": [
+                    1, 2, 3
+                ],
+                "test3": {
+                    "deep1": 44,
+                    "deep2": False,
+                    "deep3": "AB",
+                    "deep4": "AZ-23X"
+                }
+            }
+        })
+
+    def test_load_json_evaluate_this_references(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate, """{
+                            "prefix": "A",
+                            "first": [
+                                { "id": "A1" },
+                                { "id": "A2" },
+                                { "id": "A3" },
+                                { "id": "$root.prefix4" }
+                            ],
+                            "second": "$root.prefix",
+                            "third": {
+                                "test1": 23,
+                                "test2": [
+                                    1,2,3
+                                ],
+                                "test3": {
+                                    "deep1": 44,
+                                    "deep2": false,
+                                    "deep3": "$root.second",
+                                    "deep4": $this.deep1
+                                }
+                            }
+                            }""", "this_references")
+        self.assertDictEqual(result, {
+            "prefix": "A",
+            "first": [
+                {"id": "A1"},
+                {"id": "A2"},
+                {"id": "A3"},
+                {"id": "A4"}
+            ],
+            "second": "A",
+            "third": {
+                "test1": 23,
+                "test2": [
+                    1, 2, 3
+                ],
+                "test3": {
+                    "deep1": 44,
+                    "deep2": False,
+                    "deep3": "A",
+                    "deep4": 44
+                }
+            }
+        })
+

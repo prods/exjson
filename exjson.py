@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from scripting import parse, extensions
 
 _JSON_OPENING_CHARS = [',', '[', '{', ':']
 _JSON_CLOSING_CHARS = [',', '}', ']']
@@ -13,7 +14,8 @@ _PARENT_FILE_STRING_SRC = "__string__"
 
 
 def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=None,
-         parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False, **kw):
+         parse_int=None, parse_constant=None, object_pairs_hook=None, error_on_include_file_not_found=False,
+         error_on_invalid_value=False, **kw):
     """Decodes a JSON source file into a dictionary"""
     file_full_path = os.path.abspath(json_file_path)
     file_path = os.path.dirname(file_full_path)
@@ -25,12 +27,13 @@ def load(json_file_path, encoding=None, cls=None, object_hook=None, parse_float=
     kw[_PARENT_FILE_KEY] = file_full_path
     return loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                  parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook,
-                 error_on_include_file_not_found=error_on_include_file_not_found, includes_path=file_path, **kw)
+                 error_on_include_file_not_found=error_on_include_file_not_found,
+                 error_on_invalid_value=error_on_invalid_value, includes_path=file_path, **kw)
 
 
 def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=None,
           parse_int=None, parse_constant=None, object_pairs_hook=None,
-          error_on_include_file_not_found=False, includes_path=None, **kw):
+          error_on_include_file_not_found=False, error_on_invalid_value=False, includes_path=None, **kw):
     """Decodes a provided JSON source string into a dictionary"""
     _json_includes_cache = {}
     if json_string is None or json_string.strip(' ') == '':
@@ -50,6 +53,7 @@ def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=No
     # Drop parent file key before calling native json loads since it is not supported
     if kw is not None and _PARENT_FILE_KEY in kw:
         kw.pop(_PARENT_FILE_KEY, None)
+    json_source = parse(json_source, error_on_invalid_value)
     return json.loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
                       parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
 
@@ -62,6 +66,10 @@ def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
                       allow_nan=allow_nan, cls=cls, indent=indent, separators=separators,
                       default=default, sort_keys=sort_keys, **kw)
 
+
+def register_custom_scripting_extension(name, fn):
+    """Registers a custom scripting extension function"""
+    return extensions.register_extension_function(name, fn)
 
 def _include_files(include_files_path, string, encoding=None, cache=None, error_on_file_not_found=False,
                    parent_file_paths=None):
@@ -142,6 +150,22 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
         raise IncludeError(exception=ex)
 
 
+def _process_value_calls(json_source, error_on_invalid_value=False):
+    cached_values = {}
+    if not ("$." in json_source or "this." in json_source):
+        return json_source
+    # Process ref or dyn value calls
+    dyn_ref_calls = re.finditer(_DYN_REF_VALUE_CALL, json_source)
+    # Files Cache 
+    for match_num, match in enumerate(dyn_ref_calls):
+        if len(match.groups()) > 0:
+            for value in match.groups():
+                if value is None:
+                    continue
+                print(value)
+    return json_source
+
+
 def _remove_comments(string):
     """Removes all comments"""
     string = re.sub(re.compile("/\*.*?\*/", re.DOTALL), "", string)
@@ -172,8 +196,9 @@ class IncludeRecursionError(Exception):
     def __repr__(self):
         return "Inclusion Recursion Found in file {0}.".format(self._origin)
 
+
 class IncludeError(Exception):
-    def __init__(self, message=None, exception:Exception=None):
+    def __init__(self, message=None, exception: Exception = None):
         super().__init__()
         # TODO: Exception should be added to the stack...
         self._message = ""
@@ -191,4 +216,3 @@ class IncludeError(Exception):
 
     def __repr__(self):
         return "Invalid Included directive. {0}".format(self._message)
-
