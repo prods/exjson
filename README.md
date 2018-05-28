@@ -8,7 +8,8 @@ EXJSON is layer over the Python Standard JSON decoder library, which implements 
 
 ### Main Features
 * C Style Single-Line and Multi-Lines Comments.
-* Inclusion of other JSON files.
+* Inclusion of other JSON files from local storage or an http/https source.
+* Included file checksum verification.
 * Absolute and Relative Value referencing using `$root`, `$parent` and `$this`.
 * Extensible Scripting.
 
@@ -75,6 +76,49 @@ with open("./result.json") as f:
        "value_id": "93987272",
        "value": "This Value"
     },
+    {
+      "value_id": "923ko30k3",
+      "value": "Another Value"
+    }
+  ]
+}
+```
+
+The `#Include` directive accepts three parameters from which only the first one is required. They are pipe separated.
+
+```c
+#INCLUDE "test.json|{}|e3ae49df2030ee913f8be352999f30d7"
+```
+- `test.json`: the location of the file to include.
+- `{}`: the default value to use if the file is not found and the `error_on_included_file_not_found` is set to `False`.
+- `e3ae49df2030ee913f8be352999f30d7`: expected checksum. It will be used in order to verify the file validity.
+
+Additionally you are table to download the file from an http/https url and verify its checksum to prevent injection of malicious code.
+
+**Include from HTTP/HTTPS**
+```json
+{
+  // Sample Property
+  "name": "test file",
+  // Sample value set with an included object
+  "values": [
+    /* INCLUDE "http://www.exjson.com/lab/test.json" */
+    {
+      "value_id": "923ko30k3",
+      "value": "Another Value"
+    }
+  ]
+}
+```
+
+**Include from HTTP/HTTPS and verify checksum**
+```json
+{
+  // Sample Property
+  "name": "test file",
+  // Sample value set with an included object
+  "values": [
+    /* INCLUDE "http://www.exjson.com/lab/test.json|{}|e3ae49df2030ee913f8be352999f30d7" */
     {
       "value_id": "923ko30k3",
       "value": "Another Value"
@@ -616,6 +660,19 @@ The resulting value can be accessed using the relative and absolute accessors `$
 ### Unit Test Requirements:
 EXJSON unit testing runs on the [standard Python unit test library](https://docs.python.org/2/library/unittest.html). But I EXJSON unit test functions support automatic-generation of call diagrams from each test function execution. Because of this there is an additional dependency on [PyCallGraph](http://pycallgraph.readthedocs.io/en/master/). Please follow the steps below in order to install this dependency on Windows, Linux or OSX.
 Please bear in mind that the steps below assume you already have python 3.6+ and pip installed. Depending on how your environment is setup Python 3.x `pip` may be available through an alias named `pip3`.
+
+#### Turn on and off call graph generator
+Call graph generate is controlled by an environmental variable named `GENERATE_CALL_GRAPHS`. If the environmental variable does not exists the value is defaulted to `False`, no graph will be generated. If it exists and it is set to `True` graphs will be generated in the `tests/calls` folder.
+
+**Linux/OSX**
+```bash
+export GENERATE_CALL_GRAPHS=True
+```
+
+**Windows**
+```cmd
+%GENERATE_CALL_GRAPHS%=True
+```
 
 #### Ubuntu
 1. Install `Graphviz` and it's development libraries

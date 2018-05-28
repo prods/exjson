@@ -5,7 +5,10 @@ import os
 # Controls If Call Graphs will be generated and where they will be saved
 from tests import tools
 
-GENERATE_CALL_GRAPHS = True
+if os.environ.get('GENERATE_CALL_GRAPHS') is not None:
+    GENERATE_CALL_GRAPHS = bool(os.environ['GENERATE_CALL_GRAPHS'])
+else:
+    GENERATE_CALL_GRAPHS = False
 CALL_GRAPHS_PATH = path.abspath(path.join(".", "calls"))
 
 # Create Call diagrams folder
