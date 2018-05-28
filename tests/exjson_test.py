@@ -1,6 +1,6 @@
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest import TestCase
 from dateutil.tz import tzlocal
 
@@ -618,30 +618,44 @@ class PyXJSONTests(TestCase):
                         result_format_match["sec"] is not None and
                         result[0]["date"].endswith("-00:00"))
 
-    def test_loads_json_evaluate_python_formatted_date_value(self):
+    def test_loads_json_evaluate_python_formatted_now_add_date_value(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
                     "date": "$.now('yyyy-MM-dd HH:mm')"
-                    }""", "formatted")
-        print(result[0]["date"])
-        # print(result[0]["date1"])
-        # print(datetime.now().strftime("%Y-%m-%d %H:%M"))
-        self.assertTrue(result[0]["date"] == datetime.now().strftime("%Y-%m-%d %H:%M"))
+                    }""", "formatted_now_add_date_value")
+        v = datetime.now().strftime("%Y-%m-%d %H:%M")
+        self.assertTrue(result[0]["date"] == v)
 
-    # def test_loads_json_evaluate_raw_utc_date_value(self):
-    #     result = tests.generate_call_graph(
-    #         self._scenarios.loads_json_evaluate_raw_utc_date_value)
-    #     self.assertDictEqual(result[0], result[1])
-    #
-    # def test_loads_json_evaluate_formatted_date_value(self):
-    #     result = tests.generate_call_graph(
-    #         self._scenarios.loads_json_evaluate_formatted_date_value)
-    #     self.assertDictEqual(result[0], result[1])
-    #
-    # def test_loads_json_evaluate_formatted_date_and_time_value(self):
-    #     result = tests.generate_call_graph(
-    #         self._scenarios.loads_json_evaluate_formatted_date_and_time_value)
-    #     self.assertDictEqual(result[0], result[1])
+    def test_loads_json_evaluate_python_formatted_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+                    "date": "$.now().add(days=1,'yyyy-MM-dd HH:mm')"
+                    }""", "formatted")
+        v = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
+        self.assertTrue(result[0]["date"] == v)
+
+    def test_loads_json_evaluate_raw_date_value(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+            "date": "$.now()"
+            }""")
+        iso8601 = re.compile(
+            r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
+        result_format_match = iso8601.match(result[0]["date"])
+        print(result[0]["date"])
+
+        tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
+        tz_offset_hours_sep = tz_offset_hours.find('.')
+        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
+
+        self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
+                        result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
+                        result_format_match["day"] == str(datetime.now().day).rjust(2, '0') and
+                        result_format_match["hour"] == str(datetime.now().hour).rjust(2, '0') and
+                        result_format_match["min"] == str(datetime.now().minute).rjust(2, '0') and
+                        result_format_match["sec"] is not None and
+                        result[0]["date"].endswith(tz_formatted))
+
 
     def test_load_json_evaluate_sequence_single_int(self):
         result = tests.generate_call_graph(

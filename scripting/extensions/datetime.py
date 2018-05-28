@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dateutil.tz import tzlocal
 
@@ -57,7 +57,6 @@ def now(*args):
         frmt = args[0]
     return _format(now, frmt)
 
-
 def now_utc(*args):
     """Gets current UTC date and time."""
     now = _get_now_utc()
@@ -68,17 +67,87 @@ def now_utc(*args):
 
 
 def now_add(*args):
-    return "PENDING"
+    """Adds or subtract Time to """
+    result = _add_time(_get_now(), *args) 
+    return result
 
 
 def now_utc_add(*args):
-    return "PENDING"
+    result = _add_time(_get_now_utc(), *args)
+    return result
+
+def _add_time(date, *args):
+    result = date
+    format = None
+    operations = {}
+    if len(args) == 0:
+        raise AttributeError("now_add: Nothing to add. No parameters were provided.")
+    for i in range(0, len(args)):
+        if i == len(args) - 1:
+            format = args[i]
+            break
+        else:
+            op = args[i].split('=')
+            if len(op) < 2:
+                raise AttributeError("$.now().add(): Error. invalid attribute")
+            value = int(op[1])
+            if op[0] not in operations.keys():
+                operations[op[0]] = {'uom': op[0], 'value': value, 'add': value >= 0}
+            else:
+                operations[op[0]]["value"] = operations[op[0]]["value"] + value
+    for operation in operations:
+        uom = operations[operation]["uom"]
+        value = operations[operation]["value"]
+        add = operations[operation]["add"]
+        if uom == "days":
+            if add:
+                result = result + timedelta(days=value)
+            else:
+                result = result - timedelta(days=value)
+        elif uom == "weeks":
+            if add:
+                result = result + timedelta(weeks=value)
+            else:
+                result = result - timedelta(weeks=value)
+        elif uom == "months":
+            if add:
+                result = result + timedelta(days=value*365/12)
+            else:
+                result = result - timedelta(days=value*365/12)
+        elif uom == "years":
+            if add:
+                result = result + timedelta(days=value*365)
+            else:
+                result = result - timedelta(days=value*365)
+        elif uom == "hours":
+            if add:
+                result = result + timedelta(hours=value)
+            else:
+                result = result - timedelta(hours=value)
+        elif uom == "minutes":
+            if add:
+                result = result + timedelta(minutes=value)
+            else:
+                result = result - timedelta(minutes=value)
+        elif uom == "seconds":
+            if add:
+                result = result + timedelta(seconds=value)
+            else:
+                result = result - timedelta(seconds=value)
+        elif uom == "quarters":
+            raise AttributeError("$.now().add(). Error. Quarters formulas are not supported yet.")
+        else:
+            raise AttributeError(f"$.now().add(). Error. {uom} is not supported.")
+    if format is None:
+        return result.isoformat()
+    return _format(result, format)
 
 
 def _format(dt: datetime, format=None):
     """Formats the provided datetime. Default ISO8601+TZ."""
     if format is not None:
         format = _convert_universal_format(format)
+        print(format)
         return dt.strftime(format)
     if dt.utcoffset() is None:
         return dt.isoformat() + "-00:00"
