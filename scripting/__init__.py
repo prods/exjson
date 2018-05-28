@@ -1,5 +1,3 @@
-import re
-
 from scripting import extensions
 
 _REF_PREFIXES = ['$this.', '$parent.', '$root.']
