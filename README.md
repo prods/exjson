@@ -428,43 +428,41 @@ EXJSON supports dynamic values by using an extensible scripting engine based on 
   
   By default datetime functions will return date and time in [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format with explicit TZ even on UTC. ISO-8601 Zulu format can be achived by using the `Z` format as described in the table below:
       
-    | "Universal" Format Code | [Python Format Code](http://strftime.org/)        | Description                                                      | Example     |
-    |-------------|---------------------------|------------------------------------------------------------------|-------------|
-    | dddd        |   %A                      | Weekday as locale’s full name.                                   | Monday      |
-    | ddd         |   %a                      | Weekday as locale’s abbreviated name.                            | Mon         |
-    | ***N/A**    |   %w                      | Weekday as a decimal number, where 0 is Sunday and 6 is Saturday.|  1          |
-    | dd          |   %d                      | Day of the month as a zero-padded decimal number.                | 30          |
-    | d           |   %-d                     | Day of the month as a decimal number. |Platform specific)        | 30          |
-    | MMMM        |   %B                      | Month as locale’s full name.                                     | September   |
-    | MMM         |   %b                      | Month as locale’s abbreviated name.                              | Sep         |
-    | MM          |   %m                      | Month as a zero-padded decimal number.                           | 09          |
-    | M           |   %-m                     | Month as a decimal number. |Platform specific)                   |  9          |
-    | yyyy        |   %Y                      | Year with century as a decimal number.                           | 2013        |
-    | y           |   %y                      | Year without century as a zero-padded decimal number.            | 13          |
-    | HH          |   %H                      | Hour |24-hour clock) as a zero-padded decimal number.            | 19          |
-    | H           |   %-H                     | our |24-hour clock) as a decimal number. |Platform specific)     | 19          |
-    | hh          |   %I                      | Hour |12-hour clock) as a zero-padded decimal number.            | 07          |
-    | h           |   %-I                     | Hour |12-hour clock) as a decimal number. |Platform specific)    |  7          |
-    | tt          |   %p                      | Locale’s equivalent of either AM or PM.                          | AM          |
-    | mm          |   %M                      | Minute as a zero-padded decimal number.                          | 06          |
-    | m           |   %-M                     | Minute as a decimal number. |Platform specific)                  |  6          |
-    | ss          |   %S                      | Second as a zero-padded decimal number.                          | 05          |
-    | s           |   %-S                     | Second as a decimal number. |Platform specific)                  |  5          |  
-    | f           |   %f                      | Microsecond as a decimal number, zero-padded on the left.        | 000000      |
-    | zzz         |   %Z                      | Time zone name |empty string if the object is -00:00).           | -04:00      |
-    | z           |   %z                      | UTC offset in the form +HHMM or -HHMM.                           | -04:00      |
-    | ***N/A**    |   %j                      | Day of the year as a zero-padded decimal number.                 | 273         |
-    | ***N/A**    |   %-j                     | Day of the year as a decimal number. |Platform specific)         | 273         |
-    | ***N/A**    |   %U                      | Week number of the year |Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0.        | 39 |
-    | ***N/A**    |   %W                      | Week number of the year |Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.                    | 39 |
-    | q           |   **N/A**                 | Calendar Quarter as zero padded number.                           | 04          |
-    | qq          |   **N/A**                 | Calendar Quarter as number.                                      |  4          |
-    | Q           |   **N/A**                 | Fiscal Quarter as zero padded number.                             | 03          |
-    | QQ          |   **N/A**                 | Fiscal Quarter as number.                                         |  3          |
-    | F           |   %c                      | Locale’s appropriate date and time representation.        | Mon Sep 30 07:06:05 2013 |
-    | D           |   %x                      | Locale’s appropriate date representation.        | 09/30/13 |
-    | T           |   %X                      | Locale’s appropriate time representation.        | 07:06:05 |
-    | Z           |   %Y-%m-%dT%H:%m:%s.%f%z  | Zulu UTC ISO-8601                                | 2018-05-25T15:05:25.120Z |
+| "Universal" Format Code | [Python Format Code](http://strftime.org/)        | Description                                                      | Example     |
+|-------------|---------------------------|------------------------------------------------------------------|-------------|
+| dddd        |   %A                      | Weekday as locale’s full name.                                   | Monday      |
+| ddd         |   %a                      | Weekday as locale’s abbreviated name.                            | Mon         |
+| ***N/A**    |   %w                      | Weekday as a decimal number, where 0 is Sunday and 6 is Saturday.|  1          |
+| dd          |   %d                      | Day of the month as a zero-padded decimal number.                | 30          |
+| d           |   %-d                     | Day of the month as a decimal number. |Platform specific)        | 30          |
+| MMMM        |   %B                      | Month as locale’s full name.                                     | September   |
+| MMM         |   %b                      | Month as locale’s abbreviated name.                              | Sep         |
+| MM          |   %m                      | Month as a zero-padded decimal number.                           | 09          |
+| M           |   %-m                     | Month as a decimal number. |Platform specific)                   |  9          |
+| yyyy        |   %Y                      | Year with century as a decimal number.                           | 2013        |
+| y           |   %y                      | Year without century as a zero-padded decimal number.            | 13          |
+| HH          |   %H                      | Hour |24-hour clock) as a zero-padded decimal number.            | 19          |
+| H           |   %-H                     | our |24-hour clock) as a decimal number. |Platform specific)     | 19          |
+| hh          |   %I                      | Hour |12-hour clock) as a zero-padded decimal number.            | 07          |
+| h           |   %-I                     | Hour |12-hour clock) as a decimal number. |Platform specific)    |  7          |
+| tt          |   %p                      | Locale’s equivalent of either AM or PM.                          | AM          |
+| mm          |   %M                      | Minute as a zero-padded decimal number.                          | 06          |
+| m           |   %-M                     | Minute as a decimal number. |Platform specific)                  |  6          |
+| ss          |   %S                      | Second as a zero-padded decimal number.                          | 05          |
+| s           |   %-S                     | Second as a decimal number. |Platform specific)                  |  5          |  
+| f           |   %f                      | Microsecond as a decimal number, zero-padded on the left.        | 000000      |
+| zzz         |   %Z                      | Time zone name |empty string if the object is -00:00).           | -04:00      |
+| z           |   %z                      | UTC offset in the form +HHMM or -HHMM.                           | -04:00      |
+| ***N/A**    |   %j                      | Day of the year as a zero-padded decimal number.                 | 273         |
+| ***N/A**    |   %-j                     | Day of the year as a decimal number. |Platform specific)         | 273         |
+| ***N/A**    |   %U                      | Week number of the year |Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0.        | 39 |
+| ***N/A**    |   %W                      | Week number of the year |Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.                    | 39 |
+| q           |   **N/A**                 | Calendar Quarter as zero padded number.                           | 04          |
+| qq          |   **N/A**                 | Calendar Quarter as number.                                      |  4          |
+| F           |   %c                      | Locale’s appropriate date and time representation.        | Mon Sep 30 07:06:05 2013 |
+| D           |   %x                      | Locale’s appropriate date representation.        | 09/30/13 |
+| T           |   %X                      | Locale’s appropriate time representation.        | 07:06:05 |
+| Z           |   %Y-%m-%dT%H:%m:%s.%f%z  | Zulu UTC ISO-8601                                | 2018-05-25T15:05:25.120Z |
 
   `*N/A`: Is not available yet. May be included in future releases.  `N/A`: Is not supported by platform specified in column name.
     
@@ -602,6 +600,33 @@ EXJSON supports dynamic values by using an extensible scripting engine based on 
             "value1": "1",
           }
           ```
+  * **FILE_CHECKSUM()**
+   
+     Calculates MD5 or SHA1 checksum for the specified file. The file path should be relative to the path where the JSON file is located if loaded or included. Relative to the executing python script if using loads from a JSON string. If no `algorithm` is provided `md5` will be used by default.
+         
+       Signature
+       ```json
+        $.file_checksum([required]file_path,  [optional]algorithm)
+       ```
+       Supported algorithms are `md5` and `sha1`.
+       
+       Usage
+       
+          ```json
+          {
+            "filename": "../file.db",
+            "checksum": "$.file_checksum('../file.db', 'md5')"
+          }
+          ```
+          
+       Result
+        
+          ```json
+           {
+            "filename": "../file.db",
+            "checksum": "ceb4c1f4b28bd59b941573d8a41f14d3"
+          }
+          ```
 
 ##### How to Create a custom scripting extension function and register it at Run-Time.
 While standard functions can be added through issues (requests) or pull requests into the version branch you may want to use some functions that are too specific to your scenario that cannot be classified as standard. In this case you may want to register them at run-time.
@@ -717,5 +742,6 @@ pip install pycallgraph
 ### Road Map:
 * Better unit testing coverage.
 * Stabilize and resolve any bugs.
+* Segregate and make better scripting extension documentation.
 * Support Multi-File Serialization.
 * For More check [Issues](https://github.com/prods/exjson/issues) tagged as `next release` or `deffered` for details.

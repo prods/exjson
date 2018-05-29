@@ -3,6 +3,7 @@ import inspect
 from scripting.extensions.cryptography import uuidv4, md5, sha1, sha256, sha512
 from scripting.extensions.datetime import now, now_add, now_utc, now_utc_add
 from scripting.extensions.sequences import sequence
+from scripting.extensions.io import file_checksum
 
 # Functions Dict
 # This is ok for now since the list of functions is short. But further refactoring may be required if it grows.
@@ -18,7 +19,8 @@ _functions = {
     "$.sha1": sha1,
     "$.sha256": sha256,
     "$.sha512": sha512,
-    "$.sequence": sequence
+    "$.sequence": sequence,
+    '$.file_checksum': file_checksum,
 }
 
 def get_function(func_call):
