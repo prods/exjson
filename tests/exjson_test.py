@@ -701,6 +701,15 @@ class PyXJSONTests(TestCase):
                         result_format_match["sec"] is not None and
                         result[0]["date"].endswith("-00:00"))
 
+    def test_loads_json_evaluate_python_formatted_now_week_and_quarter(self):
+        result = tests.generate_call_graph(
+            self._scenarios.loads_json_evaluate_raw_date_value, """{
+                    "date": "$.now('yyyy-MM-dd w q')"
+                    }""", "formatted_now_week_and_quarter")
+        v = f"{datetime.now().strftime('%Y-%m-%d')} {datetime.now().isocalendar()[1]} {datetime.now().month//4+1}"
+        print(f"{v} {result[0]['date']}")
+        self.assertTrue(result[0]["date"] == v)
+
     def test_loads_json_evaluate_python_formatted_now_add_date_value(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
@@ -1039,7 +1048,7 @@ class PyXJSONTests(TestCase):
                             }""", "file_checksum_md5")
         self.assertDictEqual(result, {
             "file": "../LICENSE",
-            "checksum": "051c67aea02292bebcc770ceef8e6838"
+            "checksum": "4ea2181c46fbca2e818752acd46ef052"
         })
 
     def test_load_json_evaluate_file_checksum_sh1(self):
@@ -1050,5 +1059,5 @@ class PyXJSONTests(TestCase):
                             }""", "file_checksum_sha1")
         self.assertDictEqual(result, {
             "file": "../LICENSE",
-            "checksum": "5446fd655834b1f2bd345b5f4f1e02c3bbc7bc5d"
+            "checksum": "9676540206bb2ea20122340f93d1b7b9ffabfb60"
         })
