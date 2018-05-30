@@ -1,11 +1,12 @@
 language: python
 python:
-  - "3.3"
-  - "3.4"
-  - "3.5"
+  # Disabled Temporarily in order to test setup
+  #- "3.3"
+  #- "3.4"
+  #- "3.5"
   - "3.6"
-  - "3.6-dev"
-  - "3.7-dev"
+  #- "3.6-dev"
+  #- "3.7-dev"
 before_install:
   - sudo apt-get install graphviz libgraphviz-dev -y
 install:

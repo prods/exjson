@@ -1,31 +1,26 @@
 import errno
 import os
 from os import path
-import inspect
-import sys
-from os import path
 
 from pycallgraph import PyCallGraph, Config, GlobbingFilter
 from pycallgraph.output import GraphvizOutput
 
-_GENERATE_CALL_GRAPH = False
+if os.environ.get('GENERATE_CALL_GRAPHS') is not None:
+    _GENERATE_CALL_GRAPH = bool(os.environ['GENERATE_CALL_GRAPHS'])
+else:
+    _GENERATE_CALL_GRAPH = False
+
 _CALL_GRAPHS_PATH = path.abspath(path.join(".", "calls"))
 
-
-def enable_call_graph(enabled: bool, call_graph_path: str = None):
-    global _GENERATE_CALL_GRAPH, _CALL_GRAPHS_PATH
-    _GENERATE_CALL_GRAPH = enabled
-    if call_graph_path is not None:
-        _CALL_GRAPHS_PATH = call_graph_path
-    # Create Call diagrams folder
-    if _GENERATE_CALL_GRAPH:
-        try:
-            os.makedirs(_CALL_GRAPHS_PATH)
-        except OSError as ex:
-            if ex.errno == errno.EEXIST and os.path.isdir(_CALL_GRAPHS_PATH):
-                pass
-            else:
-                raise
+# Create Call diagrams folder
+if _GENERATE_CALL_GRAPH:
+    try:
+        os.makedirs(_CALL_GRAPHS_PATH)
+    except OSError as ex:
+        if ex.errno == errno.EEXIST and os.path.isdir(_CALL_GRAPHS_PATH):
+            pass
+        else:
+            raise
 
 
 def generate_call_graph(fn, *args, **kwargs):
