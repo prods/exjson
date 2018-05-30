@@ -704,7 +704,7 @@ class PyXJSONTests(TestCase):
     def test_loads_json_evaluate_python_formatted_now_week_and_quarter(self):
         result = tests.generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
-                    "date": "$.now('yyyy-MM-dd w q')"
+                    "date": "$.now('yyyy-MM-dd W q')"
                     }""", "formatted_now_week_and_quarter")
         v = f"{datetime.now().strftime('%Y-%m-%d')} {datetime.now().isocalendar()[1]} {datetime.now().month//4+1}"
         print(f"{v} {result[0]['date']}")
