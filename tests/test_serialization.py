@@ -6,11 +6,10 @@ from unittest import TestCase
 from dateutil.tz import tzlocal
 
 import exjson
-import tests
+from tests.tools.callgraph import generate_call_graph
 
 __author__ = 'prods'
 __project__ = 'exjson'
-
 
 class EXJSONTestScenarios(object):
     def load_simple_json(self):
@@ -474,7 +473,7 @@ class EXJSONTestScenarios(object):
         })
 
 
-class PyXJSONTests(TestCase):
+class TestEXJSONSerialization(TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -483,19 +482,19 @@ class PyXJSONTests(TestCase):
     # Load: Load JSON from file
 
     def test_load_simple_json(self):
-        result = tests.generate_call_graph(self._scenarios.load_simple_json)
+        result = generate_call_graph(self._scenarios.load_simple_json)
         self.assertDictEqual(result[0], result[1])
 
     def test_load_json_with_comments(self):
-        result = tests.generate_call_graph(self._scenarios.load_json_with_comments)
+        result = generate_call_graph(self._scenarios.load_json_with_comments)
         self.assertDictEqual(result[0], result[1])
 
     def test_load_json_with_comments_and_included_files(self):
-        result = tests.generate_call_graph(self._scenarios.load_json_with_comments_and_included_files)
+        result = generate_call_graph(self._scenarios.load_json_with_comments_and_included_files)
         self.assertDictEqual(result[0], result[1])
 
     def test_load_json_in_different_positions(self):
-        result = tests.generate_call_graph(self._scenarios.load_json_in_different_positions)
+        result = generate_call_graph(self._scenarios.load_json_in_different_positions)
         self.assertDictEqual(result[0], result[1])
 
     # Load: Load JSON from string
@@ -503,7 +502,7 @@ class PyXJSONTests(TestCase):
     def test_loads_simple_json_string(self):
         with open("./samples/clean-simple.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = tests.generate_call_graph(self._scenarios.loads_simple_json_string, json_source)
+        result = generate_call_graph(self._scenarios.loads_simple_json_string, json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_with_includes_and_no_provided_includes_path(self):
@@ -513,28 +512,28 @@ class PyXJSONTests(TestCase):
         "Enabled": true
         }
         """
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_with_includes_and_no_provided_includes_path, json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_string_with_comments(self):
         with open("./samples/pipeline.stage.001.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = tests.generate_call_graph(self._scenarios.loads_json_string_with_comments,
+        result = generate_call_graph(self._scenarios.loads_json_string_with_comments,
                                            json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_with_comments_and_included_files(self):
         with open("./samples/pipeline.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = tests.generate_call_graph(self._scenarios.loads_json_with_comments_and_included_files,
+        result = generate_call_graph(self._scenarios.loads_json_with_comments_and_included_files,
                                            json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_in_different_positions_and_using_properties_overrides(self):
         with open("./samples/multi-include.json", encoding="utf-8") as f:
             json_source = f.read()
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.test_loads_json_in_different_positions_and_using_properties_overrides,
             json_source)
         self.assertDictEqual(result[0], result[1])
@@ -543,7 +542,7 @@ class PyXJSONTests(TestCase):
         with open("./samples/include-without-property.json", encoding='utf-8') as f:
             json_source = f.read()
         try:
-            result = tests.generate_call_graph(
+            result = generate_call_graph(
                 self._scenarios.loads_json_without_property_override_raises_an_error,
                 json_source)
             self.fail()
@@ -566,7 +565,7 @@ class PyXJSONTests(TestCase):
             */
             }
             """
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_includes_followed_by_comment_before_EOF, json_source)
         self.assertDictEqual(result[0], result[1])
 
@@ -575,7 +574,7 @@ class PyXJSONTests(TestCase):
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
             json_source = f.read()
             try:
-                result = tests.generate_call_graph(
+                result = generate_call_graph(
                     self._scenarios.loads_json_missing_include_raises_an_error, json_source)
             except Exception as ex:
                 result = ex
@@ -585,7 +584,7 @@ class PyXJSONTests(TestCase):
         with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
             json_source = f.read()
             try:
-                result = tests.generate_call_graph(
+                result = generate_call_graph(
                     self._scenarios.loads_json_missing_include_does_not_raise_error_if_specified,
                     json_source)
             except Exception as ex:
@@ -593,26 +592,26 @@ class PyXJSONTests(TestCase):
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_include_default_value(self):
-        result = tests.generate_call_graph(self._scenarios.loads_json_include_default_value)
+        result = generate_call_graph(self._scenarios.loads_json_include_default_value)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_include_from_http_url(self):
-        result = tests.generate_call_graph(self._scenarios.loads_json_include_from_http_url)
+        result = generate_call_graph(self._scenarios.loads_json_include_from_http_url)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_include_from_http_url_validate_checksum(self):
-        result = tests.generate_call_graph(self._scenarios.loads_json_include_from_http_url_validate_checksum)
+        result = generate_call_graph(self._scenarios.loads_json_include_from_http_url_validate_checksum)
         self.assertDictEqual(result[0], result[1])
 
     # Multi-Level Include
 
     def test_loads_json_with_multi_level_include(self):
-        result = tests.generate_call_graph(self._scenarios.loads_json_with_multi_level_include)
+        result = generate_call_graph(self._scenarios.loads_json_with_multi_level_include)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_with_multiple_level_recursion_detection(self):
         try:
-            result = tests.generate_call_graph(
+            result = generate_call_graph(
                 self._scenarios.loads_json_with_multiple_level_recursion_detection)
             self.fail()
         except exjson.IncludeRecursionError as ex:
@@ -621,49 +620,49 @@ class PyXJSONTests(TestCase):
     # Dynamic and Reference Value Evaluation
 
     def test_loads_json_evaluate_uuid_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
             "hash": "$.uuid()"
             }""", "uuid")
         self.assertIsNotNone(result["hash"], "uuid")
 
     def test_loads_json_evaluate_md5_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
             "hash": "$.md5()"
             }""", "md5")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_md5_of_string_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                "hash": "$.md5('test string')"
                }""", "md5_of_string_value")
         self.assertTrue(result["hash"] == '6f8db599de986fab7a21625b7916589c')
 
     def test_loads_json_evaluate_sha1_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
              "hash": "$.sha1()"
              }""", "sha1")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_sha256_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
              "hash": "$.sha256()"
              }""", "sha256")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_sha512_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
              "hash": "$.sha512()"
              }""", "sha512")
         self.assertIsNotNone(result["hash"])
 
     def test_loads_json_evaluate_raw_date_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
             "date": "$.now()"
             }""")
@@ -685,7 +684,7 @@ class PyXJSONTests(TestCase):
                         result[0]["date"].endswith(tz_formatted))
 
     def test_loads_json_evaluate_raw_utc_date_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
             "date": "$.now().utc()"
             }""")
@@ -702,7 +701,7 @@ class PyXJSONTests(TestCase):
                         result[0]["date"].endswith("-00:00"))
 
     def test_loads_json_evaluate_python_formatted_now_week_and_quarter(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
                     "date": "$.now('yyyy-MM-dd W q')"
                     }""", "formatted_now_week_and_quarter")
@@ -711,7 +710,7 @@ class PyXJSONTests(TestCase):
         self.assertTrue(result[0]["date"] == v)
 
     def test_loads_json_evaluate_python_formatted_now_add_date_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
                     "date": "$.now('yyyy-MM-dd HH:mm')"
                     }""", "formatted_now_add_date_value")
@@ -719,7 +718,7 @@ class PyXJSONTests(TestCase):
         self.assertTrue(result[0]["date"] == v)
 
     def test_loads_json_evaluate_python_formatted_date_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
                     "date": "$.now().add(days=1,'yyyy-MM-dd HH:mm')"
                     }""", "formatted")
@@ -727,7 +726,7 @@ class PyXJSONTests(TestCase):
         self.assertTrue(result[0]["date"] == v)
 
     def test_loads_json_evaluate_raw_date_value(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate_raw_date_value, """{
             "date": "$.now()"
             }""")
@@ -749,7 +748,7 @@ class PyXJSONTests(TestCase):
                         result[0]["date"].endswith(tz_formatted))
 
     def test_load_json_evaluate_sequence_single_int(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "first": [
                                 { "id": $.sequence('A') },
@@ -768,7 +767,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_sequence_single_int_with_padding(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                                "first": [
                                    { "id": "$.sequence('A','{0:0>4}')" },
@@ -789,7 +788,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_sequence_single_int_with_steps(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                                "first": [
                                    { "id": "$.sequence('A', null, 2)" },
@@ -810,7 +809,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_sequence_multiple_int(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "first": [
                                 { "id": $.sequence('A') },
@@ -847,7 +846,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_loads_json_evaluate_sequence_multiple_string(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "first": [
                                 { "id": "AX-$.sequence('A')" },
@@ -891,7 +890,7 @@ class PyXJSONTests(TestCase):
             return result
 
         exjson.register_custom_scripting_extension("test", custom_add)
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                 "a": "$.test(10, 20)"
             }""", "register_custom_extension_function")
@@ -900,7 +899,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_root_references(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "prefix": "A",
                             "first": [
@@ -947,7 +946,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_parent_references(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "prefix": "A",
                             "first": [
@@ -994,7 +993,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_this_references(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "prefix": "A",
                             "first": [
@@ -1041,7 +1040,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_file_checksum(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "file": "../LICENSE",
                             "checksum": "$.file_checksum('../LICENSE')"
@@ -1052,7 +1051,7 @@ class PyXJSONTests(TestCase):
         })
 
     def test_load_json_evaluate_file_checksum_sh1(self):
-        result = tests.generate_call_graph(
+        result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
                             "file": "../LICENSE",
                             "checksum": "$.file_checksum('../LICENSE','sha1')"
@@ -1061,3 +1060,5 @@ class PyXJSONTests(TestCase):
             "file": "../LICENSE",
             "checksum": "9676540206bb2ea20122340f93d1b7b9ffabfb60"
         })
+
+
