@@ -11,6 +11,7 @@ before_install:
   - sudo apt-get install graphviz libgraphviz-dev -y
 install:
   - pip install -r requirements.txt
+  - pip install -e .
 script:
   - pytest
 #deploy:
