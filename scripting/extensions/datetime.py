@@ -2,11 +2,7 @@ from datetime import datetime, timedelta
 
 from dateutil.tz import tzlocal
 
-def get_week(date: datetime.date):
-    return date.isocalendar()[1]
-
-def get_week_padded(date: datetime.date):
-    return str(get_week(date)).zfill(2)
+from scripting.extensions.tools import is_windows
 
 def get_quarter(date:datetime.date):
     return ((date.month-1)//3)+1
@@ -14,34 +10,40 @@ def get_quarter(date:datetime.date):
 def get_quarter_padded(date:datetime.date):
     return str(get_quarter(date)).zfill(2)
 
+_NOT_PADDING_CHAR = '-'
+if is_windows():
+    _NOT_PADDING_CHAR = '#'
 
 _DATETIME_FORMAT_MAP = [
     ("dddd", "%A", None),  # Weekday as locale’s full name. Ex. "Monday"
     ("ddd", "%a", None),  # Weekday as locale’s abbreviated name. Ex. "Mon"
-    ("w", None, get_week), # Weekday as a decimal number, where 0 is Sunday and 6 is Saturday. Ex. "1"
-    ("ww", None, get_week_padded), # Weekday as zero padded number
+    ("w", "%w", None), # Weekday as a decimal number, where 0 is Sunday and 6 is Saturday. Ex. "1"
+    ("ww", f"%{_NOT_PADDING_CHAR}w", None), # Weekday as zero padded number
     ("dd", "%d", None),  # Day of the month as a zero-padded decimal number. Ex. "30"
-    ("d", "%-d", None),  # Day of the month as a decimal number. (Platform specific) Ex. "30"
     ("MMMM", "%B", None),  # Month as locale’s full name. Ex. "September"
     ("MMM", "%b", None),  # Month as locale’s abbreviated name. Ex. "Sep"
     ("MM", "%m", None),  # Month as a zero-padded decimal number. Ex. "09"
-    ("M", "%-m", None),  # Month as a decimal number. (Platform specific) Ex. "9"
+    ("M", f"%{_NOT_PADDING_CHAR}m", None),  # Month as a decimal number. (Platform specific) Ex. "9"
     ("yyyy", "%Y", None),  # Year with century as a decimal number. Ex. "2013"
     ("y", "%y", None),  # Year without century as a zero-padded decimal number. Ex. "13"
     ("HH", "%H", None),  # Hour (24-hour clock) as a zero-padded decimal number. Ex. "07"
-    ("H", "%-H", None),  # Hour (24-hour clock) as a decimal number. (Platform specific) Ex. "7"
+    ("H", f"%{_NOT_PADDING_CHAR}H", None),  # Hour (24-hour clock) as a decimal number. (Platform specific) Ex. "7"
     ("hh", "%I", None),  # Hour (12-hour clock) as a zero-padded decimal number. Ex. "07"
-    ("h", "%-I", None),  # Hour (12-hour clock) as a decimal number. (Platform specific) Ex. "7"
+    ("h", f"%{_NOT_PADDING_CHAR}I", None),  # Hour (12-hour clock) as a decimal number. (Platform specific) Ex. "7"
     ("tt", "%p", None),  # Locale’s equivalent of either AM or PM. Ex. "AM"
     ("mm", "%M", None),  # Minute as a zero-padded decimal number. Ex. "06"
-    ("m", "%-M", None),  # Minute as a decimal number. (Platform specific) Ex. "6"
+    ("m", f"%{_NOT_PADDING_CHAR}M", None),  # Minute as a decimal number. (Platform specific) Ex. "6"
     ("ss", "%S", None),  # Second as a zero-padded decimal number. Ex. "05"
-    ("s", "%-S", None),  # Second as a decimal number. (Platform specific) Ex. "5"
+    ("s", f"%{_NOT_PADDING_CHAR}S", None),  # Second as a decimal number. (Platform specific) Ex. "5"
     ("f", "%f", None),  # Microsecond as a decimal number, zero-padded on the left. Ex. "000000"
     ("zzz", "%Z", None),  # Time zone name (empty string if the object is naive). Ex. ""
     ("z", "%z", None),  # UTC offset in the form +HHMM or -HHMM (empty string if the the object is naive). Ex. ""
     ("j", "%j", None),  # Day of the year as a zero-padded decimal number. Ex. "273"
-    ("jj", "%-j", None),  # Day of the year as a decimal number. (Platform specific) Ex. "273",
+    ("jj", f"%{_NOT_PADDING_CHAR}j", None),  # Day of the year as a decimal number. (Platform specific) Ex. "273",
+    ("WW", "%W", None), # Week number of the year (Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0
+    ("W", f"%{_NOT_PADDING_CHAR}W", None), # Week number of the year (Sunday as the first day of the week) as a decimal number. All days in a new year preceding the first Sunday are considered to be in week 0
+    ("UU", "%U", None), #Week number of the year (Monday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
+    ("U", f"%{_NOT_PADDING_CHAR}U", None), #Week number of the year (Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
     ("qq", None, get_quarter_padded), # Calendar Year quarter as padded number
     ("q", None, get_quarter), # Calendar Year quarter as integer
     ("F", "%c", None),  # Locale’s appropriate date and time representation. Ex. "Mon Sep 30 07:06:05 2013"
