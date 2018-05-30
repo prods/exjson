@@ -432,39 +432,42 @@ EXJSON supports dynamic values by using an extensible scripting engine based on 
 |-------------|---------------------------|------------------------------------------------------------------|-------------|
 | dddd        |   %A                      | Weekday as locale’s full name.                                   | Monday      |
 | ddd         |   %a                      | Weekday as locale’s abbreviated name.                            | Mon         |
-| ***N/A**    |   %w                      | Weekday as a decimal number, where 0 is Sunday and 6 is Saturday.|  1          |
+| ww          |   %w                      | Weekday as a zero padded number, where 0 is Sunday and 6 is Saturday.|  01         |
+| w           |   %-w                      | Weekday as a decimal number, where 0 is Sunday and 6 is Saturday.|  1          |
 | dd          |   %d                      | Day of the month as a zero-padded decimal number.                | 30          |
-| d           |   %-d                     | Day of the month as a decimal number. |Platform specific)        | 30          |
+| d           |   %-d                     | Day of the month as a decimal number.         | 30          |
 | MMMM        |   %B                      | Month as locale’s full name.                                     | September   |
 | MMM         |   %b                      | Month as locale’s abbreviated name.                              | Sep         |
 | MM          |   %m                      | Month as a zero-padded decimal number.                           | 09          |
-| M           |   %-m                     | Month as a decimal number. |Platform specific)                   |  9          |
+| M           |   %-m                     | Month as a decimal number.                    |  9          |
 | yyyy        |   %Y                      | Year with century as a decimal number.                           | 2013        |
 | y           |   %y                      | Year without century as a zero-padded decimal number.            | 13          |
-| HH          |   %H                      | Hour |24-hour clock) as a zero-padded decimal number.            | 19          |
-| H           |   %-H                     | our |24-hour clock) as a decimal number. |Platform specific)     | 19          |
-| hh          |   %I                      | Hour |12-hour clock) as a zero-padded decimal number.            | 07          |
-| h           |   %-I                     | Hour |12-hour clock) as a decimal number. |Platform specific)    |  7          |
+| HH          |   %H                      | Hour (24-hour clock) as a zero-padded decimal number.            | 19          |
+| H           |   %-H                     | Hour (24-hour clock) as a decimal number.     | 19          |
+| hh          |   %I                      | Hour (12-hour clock) as a zero-padded decimal number.            | 07          |
+| h           |   %-I                     | Hour (12-hour clock) as a decimal number.     |  7          |
 | tt          |   %p                      | Locale’s equivalent of either AM or PM.                          | AM          |
 | mm          |   %M                      | Minute as a zero-padded decimal number.                          | 06          |
-| m           |   %-M                     | Minute as a decimal number. |Platform specific)                  |  6          |
+| m           |   %-M                     | Minute as a decimal number.                                      |  6          |
 | ss          |   %S                      | Second as a zero-padded decimal number.                          | 05          |
-| s           |   %-S                     | Second as a decimal number. |Platform specific)                  |  5          |  
+| s           |   %-S                     | Second as a decimal number.                   |  5          |  
 | f           |   %f                      | Microsecond as a decimal number, zero-padded on the left.        | 000000      |
-| zzz         |   %Z                      | Time zone name |empty string if the object is -00:00).           | -04:00      |
+| zzz         |   %Z                      | Time zone name (empty string if the object is -00:00).           | -04:00      |
 | z           |   %z                      | UTC offset in the form +HHMM or -HHMM.                           | -04:00      |
-| ***N/A**    |   %j                      | Day of the year as a zero-padded decimal number.                 | 273         |
-| ***N/A**    |   %-j                     | Day of the year as a decimal number. |Platform specific)         | 273         |
-| ***N/A**    |   %U                      | Week number of the year |Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0.        | 39 |
-| ***N/A**    |   %W                      | Week number of the year |Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.                    | 39 |
-| q           |   **N/A**                 | Calendar Quarter as zero padded number.                           | 04          |
-| qq          |   **N/A**                 | Calendar Quarter as number.                                      |  4          |
+| j           |   %j                      | Day of the year as a zero-padded decimal number.                 | 273         |
+| jj          |   %-j                     | Day of the year as a decimal number.          | 273         |
+| UU          |   %U                      | Week number of the year (Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0.        | 09 |
+| U           |   %-U                     | Week number of the year (Sunday as the first day of the week) as a decimal number. All days in a new year preceding the first Sunday are considered to be in week 0.        |  9 |
+| WW          |   %W                      | Week number of the year (Monday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Monday are considered to be in week 0.                    | 08 |
+| W           |   %W                      | Week number of the year (Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.                    |  8 |
+| q           |   **custom**              | Calendar Quarter as zero padded number.                           | 04          |
+| qq          |   **custom**              | Calendar Quarter as number.                                      |  4          |
 | F           |   %c                      | Locale’s appropriate date and time representation.        | Mon Sep 30 07:06:05 2013 |
 | D           |   %x                      | Locale’s appropriate date representation.        | 09/30/13 |
 | T           |   %X                      | Locale’s appropriate time representation.        | 07:06:05 |
 | Z           |   %Y-%m-%dT%H:%m:%s.%f%z  | Zulu UTC ISO-8601                                | 2018-05-25T15:05:25.120Z |
-
-  `*N/A`: Is not available yet. May be included in future releases.  `N/A`: Is not supported by platform specified in column name.
+  
+  __No need to worry about running it on windows or linux. The universal format converter takes care of the platform specific tokens `-`/`#`.__
     
   
   * **NOW()**
