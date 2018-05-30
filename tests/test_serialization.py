@@ -13,7 +13,7 @@ __project__ = 'exjson'
 
 class EXJSONTestScenarios(object):
     def load_simple_json(self):
-        return (exjson.load("./samples/clean-simple.json"), {
+        return (exjson.load("./tests/samples/clean-simple.json"), {
             "Name": "Sample Values",
             "Enabled": True,
             "Values": [
@@ -25,7 +25,7 @@ class EXJSONTestScenarios(object):
         })
 
     def load_json_with_comments(self):
-        return (exjson.load("./samples/pipeline.stage.001.json", encoding='utf-8'), {
+        return (exjson.load("./tests/samples/pipeline.stage.001.json", encoding='utf-8'), {
             "Name": "First Stage",
             "Description": "Retrieves Sample Data from file",
             "Sequence_Id": 1,
@@ -49,7 +49,7 @@ class EXJSONTestScenarios(object):
         })
 
     def load_json_with_comments_and_included_files(self):
-        return (exjson.load("./samples/pipeline.json", encoding='utf-8'), {
+        return (exjson.load("./tests/samples/pipeline.json", encoding='utf-8'), {
             "Name": "Sample Pipeline",
             "Description": "This is a sample Pipeline",
             "Sequence_Id": 0,
@@ -192,7 +192,7 @@ class EXJSONTestScenarios(object):
         })
 
     def load_json_in_different_positions(self):
-        return (exjson.load("./samples/multi-include.json", encoding='utf-8'), {
+        return (exjson.load("./tests/samples/multi-include.json", encoding='utf-8'), {
             "Name": "Test Name",
             "Values": [
                 {
@@ -268,7 +268,7 @@ class EXJSONTestScenarios(object):
         })
 
     def loads_json_with_comments_and_included_files(self, json_source):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples"), {
             "Name": "Sample Pipeline",
             "Description": "This is a sample Pipeline",
             "Sequence_Id": 0,
@@ -341,7 +341,7 @@ class EXJSONTestScenarios(object):
         })
 
     def test_loads_json_in_different_positions_and_using_properties_overrides(self, json_source):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples"), {
             "Name": "Test Name",
             "Values": [
                 {
@@ -403,11 +403,11 @@ class EXJSONTestScenarios(object):
         })
 
     def loads_json_missing_include_raises_an_error(self, json_source):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
+        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples",
                             error_on_include_file_not_found=True)
 
     def loads_json_missing_include_does_not_raise_error_if_specified(self, json_source):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples",
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples",
                              error_on_include_file_not_found=False), {
                     "Name": "Test Name",
                     "Values": [
@@ -428,7 +428,7 @@ class EXJSONTestScenarios(object):
                 })
 
     def loads_json_with_multi_level_include(self):
-        return (exjson.load("./samples/multi-level-include/multi-level-include-main.json", encoding='utf-8'), {
+        return (exjson.load("./tests/samples/multi-level-include/multi-level-include-main.json", encoding='utf-8'), {
             "Name": "Test",
             "Value": "30l2l3l2l3l2--3lo",
             "Level1": {
@@ -458,17 +458,17 @@ class EXJSONTestScenarios(object):
         })
 
     def loads_json_with_multiple_level_recursion_detection(self):
-        return exjson.load("./samples/multi-level-include/multi-level-include-recursive-first.json",
+        return exjson.load("./tests/samples/multi-level-include/multi-level-include-recursive-first.json",
                            encoding='utf-8')
 
     def loads_json_without_property_override_raises_an_error(self, json_source):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
+        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples")
 
     def loads_json_evaluate(self, json_source, test_name=None):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./samples")
+        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples")
 
     def loads_json_evaluate_raw_date_value(self, json_source, test_name=None):
-        return (exjson.loads(json_source, encoding='utf-8', includes_path="./samples"), {
+        return (exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples"), {
             "date": datetime.now(tzlocal()).isoformat()
         })
 
@@ -500,7 +500,7 @@ class TestEXJSONSerialization(TestCase):
     # Load: Load JSON from string
 
     def test_loads_simple_json_string(self):
-        with open("./samples/clean-simple.json", encoding="utf-8") as f:
+        with open("./tests/samples/clean-simple.json", encoding="utf-8") as f:
             json_source = f.read()
         result = generate_call_graph(self._scenarios.loads_simple_json_string, json_source)
         self.assertDictEqual(result[0], result[1])
@@ -517,21 +517,21 @@ class TestEXJSONSerialization(TestCase):
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_string_with_comments(self):
-        with open("./samples/pipeline.stage.001.json", encoding="utf-8") as f:
+        with open("./tests/samples/pipeline.stage.001.json", encoding="utf-8") as f:
             json_source = f.read()
         result = generate_call_graph(self._scenarios.loads_json_string_with_comments,
                                            json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_with_comments_and_included_files(self):
-        with open("./samples/pipeline.json", encoding="utf-8") as f:
+        with open("./tests/samples/pipeline.json", encoding="utf-8") as f:
             json_source = f.read()
         result = generate_call_graph(self._scenarios.loads_json_with_comments_and_included_files,
                                            json_source)
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_in_different_positions_and_using_properties_overrides(self):
-        with open("./samples/multi-include.json", encoding="utf-8") as f:
+        with open("./tests/samples/multi-include.json", encoding="utf-8") as f:
             json_source = f.read()
         result = generate_call_graph(
             self._scenarios.test_loads_json_in_different_positions_and_using_properties_overrides,
@@ -539,7 +539,7 @@ class TestEXJSONSerialization(TestCase):
         self.assertDictEqual(result[0], result[1])
 
     def test_loads_json_without_property_override_raises_an_error(self):
-        with open("./samples/include-without-property.json", encoding='utf-8') as f:
+        with open("./tests/samples/include-without-property.json", encoding='utf-8') as f:
             json_source = f.read()
         try:
             result = generate_call_graph(
@@ -571,7 +571,7 @@ class TestEXJSONSerialization(TestCase):
 
     def test_loads_json_missing_include_raises_an_error(self):
         result = None
-        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+        with open("./tests/samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
             json_source = f.read()
             try:
                 result = generate_call_graph(
@@ -581,7 +581,7 @@ class TestEXJSONSerialization(TestCase):
         self.assertIsNotNone(result)
 
     def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
-        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+        with open("./tests/samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
             json_source = f.read()
             try:
                 result = generate_call_graph(
@@ -1042,22 +1042,22 @@ class TestEXJSONSerialization(TestCase):
     def test_load_json_evaluate_file_checksum(self):
         result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
-                            "file": "../LICENSE",
-                            "checksum": "$.file_checksum('../LICENSE')"
+                            "file": "./LICENSE",
+                            "checksum": "$.file_checksum('./LICENSE')"
                             }""", "file_checksum_md5")
         self.assertDictEqual(result, {
-            "file": "../LICENSE",
+            "file": "./LICENSE",
             "checksum": "4ea2181c46fbca2e818752acd46ef052"
         })
 
     def test_load_json_evaluate_file_checksum_sh1(self):
         result = generate_call_graph(
             self._scenarios.loads_json_evaluate, """{
-                            "file": "../LICENSE",
-                            "checksum": "$.file_checksum('../LICENSE','sha1')"
+                            "file": "./LICENSE",
+                            "checksum": "$.file_checksum('./LICENSE','sha1')"
                             }""", "file_checksum_sha1")
         self.assertDictEqual(result, {
-            "file": "../LICENSE",
+            "file": "./LICENSE",
             "checksum": "9676540206bb2ea20122340f93d1b7b9ffabfb60"
         })
 
