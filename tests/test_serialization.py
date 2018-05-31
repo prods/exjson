@@ -669,11 +669,12 @@ class TestEXJSONSerialization(TestCase):
         iso8601 = re.compile(
             r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
         result_format_match = iso8601.match(result[0]["date"])
-        print(result[0]["date"])
 
         tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
         tz_offset_hours_sep = tz_offset_hours.find('.')
         tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
+
+        print(f"{result[0]['date']} {tz_formatted}")
 
         self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
                         result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
@@ -724,28 +725,6 @@ class TestEXJSONSerialization(TestCase):
                     }""", "formatted")
         v = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
         self.assertTrue(result[0]["date"] == v)
-
-    def test_loads_json_evaluate_raw_date_value(self):
-        result = generate_call_graph(
-            self._scenarios.loads_json_evaluate_raw_date_value, """{
-            "date": "$.now()"
-            }""")
-        iso8601 = re.compile(
-            r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
-        result_format_match = iso8601.match(result[0]["date"])
-        print(result[0]["date"])
-
-        tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
-        tz_offset_hours_sep = tz_offset_hours.find('.')
-        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
-
-        self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
-                        result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
-                        result_format_match["day"] == str(datetime.now().day).rjust(2, '0') and
-                        result_format_match["hour"] == str(datetime.now().hour).rjust(2, '0') and
-                        result_format_match["min"] == str(datetime.now().minute).rjust(2, '0') and
-                        result_format_match["sec"] is not None and
-                        result[0]["date"].endswith(tz_formatted))
 
     def test_load_json_evaluate_sequence_single_int(self):
         result = generate_call_graph(
