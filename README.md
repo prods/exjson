@@ -1,5 +1,5 @@
 # EXJSON 
-## Extended JSON Parser for Python
+## Extended JSON Parser for Python 3.6+
 
 ### Introduction
 EXJSON is layer over the Python Standard JSON decoder library, which implements functionality not currently supported by it while trying to keep compliant with the JSON standard as much as possible.
@@ -13,7 +13,8 @@ EXJSON is layer over the Python Standard JSON decoder library, which implements 
 
 
 ### Supported Python Versions
-- Python 3.x
+- Python 3.6 
+- Python 3.7
 
 ### Install/Upgrade
 
