@@ -101,7 +101,7 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
                                                                                                              '').replace(
                 '\n', '').replace('{', '').replace(',', '')
             if parent is not None and parent != "":
-                source_key = f"{parent}.{source_key}"
+                source_key = "{0}.{1}".format(parent, source_key)
             source_value_scope = working_source[i:]
             # Find arrays
             if source_value_scope.replace(' ', '').replace('\t', '')[1] == '[':
@@ -118,7 +118,7 @@ def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extr
             if source_value[0] == "{" and source_value[-1] == "}":
                 inner_object_tree = _extract_tree(source_value, source_key, tree)
                 for inner_object_key in inner_object_tree[0]:
-                    full_key = f"{source_key}.{inner_object_key.replace(source_key, '')}".replace("..", ".")
+                    full_key = "{0}.{1}".format(source_key, inner_object_key.replace(source_key, '')).replace("..", ".")
                     tree[full_key] = inner_object_tree[0][inner_object_key]
                     # Reference Tree
                     ref_tree[full_key] = _get_abs_ref_tree_entry(full_key, source_key)
@@ -208,7 +208,7 @@ def _extract_ref_call(source: str, keys: list, caller:str):
                 break
             i = i + 1
         if ref_call_prefix != "" and ref_call_without_prefix != "":
-            ref_call = f"{ref_call_prefix}.{ref_call_without_prefix}"
+            ref_call = "{0}.{1}".format(ref_call_prefix, ref_call_without_prefix)
             return (ref_call, ref_call_without_prefix, ref_call_prefix, caller)
         else:
             return None
@@ -233,9 +233,9 @@ def _get_abs_ref_tree_entry(source_key: str, parent_key: str):
 def _get_abs_ref_call_from_ref_tree(ref_tree:dict, ref_call:tuple):
     if ref_tree is not None and ref_call is not None:
         if '$this' in ref_call[2]:
-            return ref_call + (ref_tree[ref_call[3]]["this"], f"{ref_tree[ref_call[3]]['this']}.{ref_call[1]}")
+            return ref_call + (ref_tree[ref_call[3]]["this"], "{0}.{1}".format(ref_tree[ref_call[3]]['this'], ref_call[1]))
         elif '$parent' in ref_call[2]:
-            return ref_call + (ref_tree[ref_call[3]]["this"], f"{ref_tree[ref_call[3]]['parent']}.{ref_call[1]}")
+            return ref_call + (ref_tree[ref_call[3]]["this"], "{0}.{1}".format(ref_tree[ref_call[3]]['parent'],ref_call[1]))
         else:
             return ref_call + (ref_call[1],ref_call[1])
     else:

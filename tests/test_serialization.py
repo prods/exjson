@@ -672,9 +672,9 @@ class TestEXJSONSerialization(TestCase):
 
         tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
         tz_offset_hours_sep = tz_offset_hours.find('.')
-        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
+        tz_formatted = "{0}{1}:{2}".format(tz_offset_hours[0],tz_offset_hours[1:tz_offset_hours_sep].zfill(2),tz_offset_hours[tz_offset_hours_sep+1:].zfill(2))
 
-        print(f"{result[0]['date']} {tz_formatted}")
+        print("{0} {1}".format(result[0]['date'], tz_formatted))
 
         self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
                         result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
@@ -706,8 +706,8 @@ class TestEXJSONSerialization(TestCase):
             self._scenarios.loads_json_evaluate_raw_date_value, """{
                     "date": "$.now('yyyy-MM-dd W q')"
                     }""", "formatted_now_week_and_quarter")
-        v = f"{datetime.now().strftime('%Y-%m-%d')} {datetime.now().isocalendar()[1]} {datetime.now().month//4+1}"
-        print(f"{v} {result[0]['date']}")
+        v = "{0} {1} {2}".format(datetime.now().strftime('%Y-%m-%d'), datetime.now().isocalendar()[1], datetime.now().month//4+1)
+        print("{0} {1}".format(v, result[0]['date']))
         self.assertTrue(result[0]["date"] == v)
 
     def test_loads_json_evaluate_python_formatted_now_add_date_value(self):

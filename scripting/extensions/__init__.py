@@ -49,11 +49,11 @@ def remove_quotation(value):
 def register_extension_function(name, fn):
     """Register Custom Extension Function"""
     global _functions
-    fn_name = f"$.{name}"
+    fn_name = "$.{0}".format(name)
     if fn_name in _functions.keys():
-        raise Exception(f"Extension Function with name {fn_name} is already registered.")
+        raise Exception("Extension Function with name {0} is already registered.".format(fn_name))
     else:
         fn_info = inspect.getfullargspec(fn)
         if fn_info.varargs is None:
-            raise Exception(f"Provided Extension Function with name {fn_name} does not accept parameters. It must have at least an *arg parameter defined.")
+            raise Exception("Provided Extension Function with name {0} does not accept parameters. It must have at least an *arg parameter defined.".format(fn_name))
         _functions[fn_name] = fn
