@@ -1,14 +1,24 @@
 language: python
 python:
+  # Disabled Temporarily in order to test setup
+  #- "3.3"
+  #- "3.4"
+  #- "3.5"
   - "3.6"
-  - "3.6-dev"  # 3.6 development branch
-  - "3.7-dev"  # 3.7 development branch
-# command to install dependencies
+  #- "3.6-dev"
+  #- "3.7-dev"
+before_install:
+  - sudo apt-get install graphviz libgraphviz-dev -y
+  - echo 'America/New_York' | sudo tee /etc/timezone
+  - sudo dpkg-reconfigure --frontend noninteractive tzdata
+  - export TZ=EST
+  - export SRC_ROOT=$(pwd)
+  - export PYTHONPATH=$PYTHONPATH:$SRC_ROOT
 install:
   - pip install -r requirements.txt
-# command to run tests
+  - pip install -e .
 script:
-  - pytest
+  - python -m unittest discover -s "$SRC_ROOT/tests" -t "$SRC_ROOT"
 #deploy:
 #  provider: pypi
 #  user: "Your username"

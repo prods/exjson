@@ -104,10 +104,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+calls
 
 .idea
 
-tests/calls/*.png
 tests/*.png
 
 # Test files
