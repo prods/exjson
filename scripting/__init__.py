@@ -75,7 +75,7 @@ def _has_reference_calls(source:str):
 def _extract_tree(source: str, parent: str = None, outer_tree: dict = None, extract_ref_calls: bool = True):
     tree = {}
     if outer_tree is not None:
-        tree = { **outer_tree }
+        tree = dict(outer_tree)
     ref_list = {}
     ref_tree = {}
     i = 0
