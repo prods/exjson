@@ -233,9 +233,9 @@ def _get_abs_ref_tree_entry(source_key: str, parent_key: str):
 def _get_abs_ref_call_from_ref_tree(ref_tree:dict, ref_call:tuple):
     if ref_tree is not None and ref_call is not None:
         if '$this' in ref_call[2]:
-            return ref_call + (ref_tree[ref_call[3]]["this"], f"{ref_tree[ref_call[3]]['this']}.{ref_call[1]}")
+            return ref_call + (ref_tree[ref_call[3]]["this"], "{0}.{1}".format(ref_tree[ref_call[3]]['this'], ref_call[1]))
         elif '$parent' in ref_call[2]:
-            return ref_call + (ref_tree[ref_call[3]]["this"], f"{ref_tree[ref_call[3]]['parent']}.{ref_call[1]}")
+            return ref_call + (ref_tree[ref_call[3]]["this"], "{0}.{1}".format(ref_tree[ref_call[3]]['parent'],ref_call[1]))
         else:
             return ref_call + (ref_call[1],ref_call[1])
     else:

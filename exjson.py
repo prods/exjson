@@ -178,7 +178,7 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
 def _download_file(url, local_path):
     file_name = url[url.rfind("/")+1:]
     if not file_name.endswith('.json'):
-        file_name = f"{file_name}.json"
+        file_name = "{0}.json".format(file_name)
     info_file_name = file_name.replace('.json', '.http.json')
     local_file_path = os.path.join(local_path, file_name)
     info_file_path = os.path.join(local_path, info_file_name)
@@ -200,7 +200,7 @@ def _download_file(url, local_path):
                 }
                 f.write(json.dumps(data))
     except Exception as ex:
-        raise IOError(f"Include file could not be downloaded from {url}. Ready: {ex}.")
+        raise IOError("Include file could not be downloaded from {0}. Ready: {1}.".format(url, ex))
     return local_file_path
 
 

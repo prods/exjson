@@ -8,7 +8,7 @@ def file_checksum(*args):
     if len(args) > 1:
         hash_algo = args[1]
     if hash_algo not in ['md5', 'sha1']:
-        raise AttributeError(f"Checksum error: {hash_algo} is not a supported checksum algorithm.")
+        raise AttributeError("Checksum error: {0} is not a supported checksum algorithm.".format(hash_algo))
     if hash_algo == 'md5':
         hash_provider = hashlib.md5()
     else:
