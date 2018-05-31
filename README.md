@@ -1,4 +1,4 @@
-# EXJSON 
+# EXJSON   ![travis-ci master build status](https://travis-ci.org/prods/exjson.svg?branch=master)
 ## Extended JSON Parser for Python 3.6+
 
 ### Introduction
