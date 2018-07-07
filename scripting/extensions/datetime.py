@@ -150,7 +150,10 @@ def _add_time(date, *args):
             else:
                 result = result - timedelta(seconds=value)
         elif uom == "quarters":
-            raise AttributeError("$.now().add(). Error. Quarters formulas are not supported yet.")
+            if add:
+                result = result + timedelta(days=value*4*(365/12))
+            else:
+                result = result - timedelta(days=value*4*(365/12))
         else:
             raise AttributeError(f"$.now().add(). Error. {uom} is not supported.")
     if format is None:
