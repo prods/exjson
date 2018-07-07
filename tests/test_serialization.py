@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from datetime import datetime, timedelta
 from unittest import TestCase
@@ -11,18 +12,22 @@ from tests.tools.callgraph import generate_call_graph
 __author__ = 'prods'
 __project__ = 'exjson'
 
+def get_sample_json_file_path(file_name):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "samples", file_name)
 
 class EXJSONTestScenarios(object):
+
+    @generate_call_graph
     def load_simple_json(self):
-        return exjson.load("./tests/samples/clean-simple.json")
+        return exjson.load(get_sample_json_file_path("clean-simple.json"))
 
     @generate_call_graph
     def load_json_with_comments(self):
-        return exjson.load("./tests/samples/pipeline.stage.001.json", encoding='utf-8')
+        return exjson.load(get_sample_json_file_path("pipeline.stage.001.json"), encoding='utf-8')
 
     @generate_call_graph
     def load_json_with_comments_and_included_files(self):
-        return exjson.load("./tests/samples/pipeline.json", encoding='utf-8')
+        return exjson.load(get_sample_json_file_path("pipeline.json"), encoding='utf-8')
 
     @generate_call_graph
     def loads_json_include_default_value(self):
@@ -61,7 +66,7 @@ class EXJSONTestScenarios(object):
 
     @generate_call_graph
     def load_json_in_different_positions(self):
-        return exjson.load("./tests/samples/multi-include.json", encoding='utf-8')
+        return exjson.load(get_sample_json_file_path("multi-include.json"), encoding='utf-8')
 
     @generate_call_graph
     def loads_simple_json_string(self, json_source):
@@ -99,11 +104,11 @@ class EXJSONTestScenarios(object):
 
     @generate_call_graph
     def loads_json_with_multi_level_include(self):
-        return exjson.load("./tests/samples/multi-level-include/multi-level-include-main.json", encoding='utf-8')
+        return exjson.load(get_sample_json_file_path("multi-level-include/multi-level-include-main.json"), encoding='utf-8')
 
     @generate_call_graph
     def loads_json_with_multiple_level_recursion_detection(self):
-        return exjson.load("./tests/samples/multi-level-include/multi-level-include-recursive-first.json",
+        return exjson.load(get_sample_json_file_path("multi-level-include/multi-level-include-recursive-first.json"),
                            encoding='utf-8')
 
     @generate_call_graph
@@ -268,7 +273,7 @@ class TestEXJSONSerialization(TestCase):
     # Load: Load JSON from string
 
     def test_loads_simple_json_string(self):
-        with open("./tests/samples/clean-simple.json", encoding="utf-8") as f:
+        with open(get_sample_json_file_path("clean-simple.json"), encoding="utf-8") as f:
             json_source = f.read()
         result = self._scenarios.loads_simple_json_string(json_source)
         self.assertDictEqual(result, {
@@ -306,7 +311,7 @@ class TestEXJSONSerialization(TestCase):
         })
 
     def test_loads_json_string_with_comments(self):
-        with open("./tests/samples/pipeline.stage.001.json", encoding="utf-8") as f:
+        with open(get_sample_json_file_path("pipeline.stage.001.json"), encoding="utf-8") as f:
             json_source = f.read()
         result = self._scenarios.loads_json_string_with_comments(json_source)
         self.assertDictEqual(result, {
@@ -333,7 +338,7 @@ class TestEXJSONSerialization(TestCase):
         })
 
     def test_loads_json_with_comments_and_included_files(self):
-        with open("./tests/samples/pipeline.json", encoding="utf-8") as f:
+        with open(get_sample_json_file_path("pipeline.json"), encoding="utf-8") as f:
             json_source = f.read()
         result = self._scenarios.loads_json_with_comments_and_included_files(json_source)
         self.assertDictEqual(result, {
@@ -409,7 +414,7 @@ class TestEXJSONSerialization(TestCase):
         })
 
     def test_loads_json_in_different_positions_and_using_properties_overrides(self):
-        with open("./tests/samples/multi-include.json", encoding="utf-8") as f:
+        with open(get_sample_json_file_path("multi-include.json"), encoding="utf-8") as f:
             json_source = f.read()
         result = self._scenarios.test_loads_json_in_different_positions_and_using_properties_overrides(json_source)
         self.assertDictEqual(result, {
@@ -436,7 +441,7 @@ class TestEXJSONSerialization(TestCase):
         })
 
     def test_loads_json_without_property_override_raises_an_error(self):
-        with open("./tests/samples/include-without-property.json", encoding='utf-8') as f:
+        with open(get_sample_json_file_path("include-without-property.json"), encoding='utf-8') as f:
             json_source = f.read()
         try:
             result = self._scenarios.loads_json_without_property_override_raises_an_error(json_source)
@@ -500,7 +505,7 @@ class TestEXJSONSerialization(TestCase):
 
     def test_loads_json_missing_include_raises_an_error(self):
         result = None
-        with open("./tests/samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+        with open(get_sample_json_file_path("multi-include-with-missing-ref.json"), encoding="utf-8") as f:
             json_source = f.read()
             try:
                 result = self._scenarios.loads_json_missing_include_raises_an_error(json_source)
