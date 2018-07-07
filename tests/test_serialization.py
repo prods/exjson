@@ -13,7 +13,10 @@ __author__ = 'prods'
 __project__ = 'exjson'
 
 def get_sample_json_file_path(file_name):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "samples", file_name)
+    root = os.path.dirname(os.path.realpath(__file__))
+    if "SRC_ROOT" in os.environ:
+        root = os.path.join(os.path.abspath(os.environ['SRC_ROOT']), "tests")
+    return os.path.join(root, "samples", file_name)
 
 class EXJSONTestScenarios(object):
 
