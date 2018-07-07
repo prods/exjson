@@ -9,6 +9,7 @@ before_install:
   - echo 'America/New_York' | sudo tee /etc/timezone
   - sudo dpkg-reconfigure --frontend noninteractive tzdata
   - export TZ=EST
+  - export GENERATE_CALL_GRAPHS=False
   - export SRC_ROOT=$(pwd)
   - export PYTHONPATH=$PYTHONPATH:$SRC_ROOT
 install:

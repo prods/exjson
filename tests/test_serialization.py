@@ -12,11 +12,14 @@ from tests.tools.callgraph import generate_call_graph
 __author__ = 'prods'
 __project__ = 'exjson'
 
-def get_sample_json_file_path(file_name):
+def get_sample_dir_path():
     root = os.path.dirname(os.path.realpath(__file__))
     if "SRC_ROOT" in os.environ:
         root = os.path.join(os.path.abspath(os.environ['SRC_ROOT']), "tests")
-    return os.path.join(root, "samples", file_name)
+    return os.path.join(root, "samples")
+
+def get_sample_json_file_path(file_name):
+    return os.path.join(get_sample_dir_path(), file_name)
 
 class EXJSONTestScenarios(object):
 
@@ -85,11 +88,11 @@ class EXJSONTestScenarios(object):
 
     @generate_call_graph
     def loads_json_with_comments_and_included_files(self, json_source):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples")
+        return exjson.loads(json_source, encoding='utf-8', includes_path=get_sample_dir_path())
 
     @generate_call_graph
     def test_loads_json_in_different_positions_and_using_properties_overrides(self, json_source):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples")
+        return exjson.loads(json_source, encoding='utf-8', includes_path=get_sample_dir_path())
 
     @generate_call_graph
     def loads_json_includes_followed_by_comment_before_EOF(self, json_source):
@@ -97,12 +100,12 @@ class EXJSONTestScenarios(object):
 
     @generate_call_graph
     def loads_json_missing_include_raises_an_error(self, json_source):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples",
+        return exjson.loads(json_source, encoding='utf-8', includes_path=get_sample_dir_path(),
                             error_on_include_file_not_found=True)
 
     @generate_call_graph
     def loads_json_missing_include_does_not_raise_error_if_specified(self, json_source):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples",
+        return exjson.loads(json_source, encoding='utf-8', includes_path=get_sample_dir_path(),
                             error_on_include_file_not_found=False)
 
     @generate_call_graph
@@ -116,16 +119,16 @@ class EXJSONTestScenarios(object):
 
     @generate_call_graph
     def loads_json_without_property_override_raises_an_error(self, json_source):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples")
+        return exjson.loads(json_source, encoding='utf-8', includes_path=get_sample_dir_path())
 
     @generate_call_graph
     def loads_json_evaluate(self, json_source, test_name=None):
         __name__ = test_name
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples")
+        return exjson.loads(json_source, encoding='utf-8', includes_path=get_sample_dir_path())
 
     @generate_call_graph
     def loads_json_evaluate_raw_date_value(self, json_source, test_name=None):
-        return exjson.loads(json_source, encoding='utf-8', includes_path="./tests/samples")
+        return exjson.loads(json_source, encoding='utf-8', includes_path=get_sample_dir_path())
 
 
 class TestEXJSONSerialization(TestCase):
