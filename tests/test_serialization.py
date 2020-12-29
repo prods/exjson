@@ -12,17 +12,14 @@ from tests.tools.callgraph import generate_call_graph
 __author__ = 'prods'
 __project__ = 'exjson'
 
-
 def get_sample_dir_path():
     root = os.path.dirname(os.path.realpath(__file__))
     if "SRC_ROOT" in os.environ:
         root = os.path.join(os.path.abspath(os.environ['SRC_ROOT']), "tests")
     return os.path.join(root, "samples")
 
-
 def get_sample_json_file_path(file_name):
     return os.path.join(get_sample_dir_path(), file_name)
-
 
 class EXJSONTestScenarios(object):
 
@@ -32,11 +29,11 @@ class EXJSONTestScenarios(object):
 
     @generate_call_graph
     def load_json_with_comments(self):
-        return exjson.load(get_sample_json_file_path("pipeline.stage.001.json"))
+        return exjson.load(get_sample_json_file_path("pipeline.stage.001.json"), encoding='utf-8')
 
     @generate_call_graph
     def load_json_with_comments_and_included_files(self):
-        return exjson.load(get_sample_json_file_path("pipeline.json"))
+        return exjson.load(get_sample_json_file_path("pipeline.json"), encoding='utf-8')
 
     @generate_call_graph
     def loads_json_include_default_value(self):
@@ -113,8 +110,7 @@ class EXJSONTestScenarios(object):
 
     @generate_call_graph
     def loads_json_with_multi_level_include(self):
-        return exjson.load(get_sample_json_file_path("multi-level-include/multi-level-include-main.json"),
-                           encoding='utf-8')
+        return exjson.load(get_sample_json_file_path("multi-level-include/multi-level-include-main.json"), encoding='utf-8')
 
     @generate_call_graph
     def loads_json_with_multiple_level_recursion_detection(self):
@@ -524,7 +520,7 @@ class TestEXJSONSerialization(TestCase):
         self.assertIsNotNone(result)
 
     def test_loads_json_missing_include_does_not_raise_error_if_specified(self):
-        with open("./samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
+        with open("./tests/samples/multi-include-with-missing-ref.json", encoding="utf-8") as f:
             json_source = f.read()
             try:
                 result = self._scenarios.loads_json_missing_include_does_not_raise_error_if_specified(json_source)
@@ -687,9 +683,9 @@ class TestEXJSONSerialization(TestCase):
 
         tz_offset_hours = str(datetime.now(tzlocal()).utcoffset().total_seconds() / 3600)
         tz_offset_hours_sep = tz_offset_hours.find('.')
-        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep + 1:].zfill(2)}"
+        tz_formatted = f"{tz_offset_hours[0]}{tz_offset_hours[1:tz_offset_hours_sep].zfill(2)}:{tz_offset_hours[tz_offset_hours_sep+1:].zfill(2)}"
 
-        # print(f"{result['date']} {tz_formatted}")
+        print(f"{result['date']} {tz_formatted}")
 
         self.assertTrue(result_format_match["year"] == str(datetime.now().year) and
                         result_format_match["month"] == str(datetime.now().month).rjust(2, '0') and
@@ -706,7 +702,7 @@ class TestEXJSONSerialization(TestCase):
         iso8601 = re.compile(
             r'^(?P<full>((?P<year>\d{4})([/-]?(?P<month>(0[1-9])|(1[012]))([/-]?(?P<day>(0[1-9])|([12]\d)|(3[01])))?)?(?:T(?P<hour>([01][0-9])|(?:2[0123]))(\:?(?P<min>[0-5][0-9])(\:?(?P<sec>[0-5][0-9]([\,\.]\d{1,10})?))?)?(?:Z|([\-+](?:([01][0-9])|(?:2[0123]))(\:?(?:[0-5][0-9]))?))?)?))$')
         result_format_match = iso8601.match(result["date"])
-        # print(result["date"])
+        print(result["date"])
         self.assertTrue(result_format_match["year"] == str(datetime.utcnow().year) and
                         result_format_match["month"] == str(datetime.utcnow().month).rjust(2, '0') and
                         result_format_match["day"] == str(datetime.utcnow().day).rjust(2, '0') and
@@ -719,8 +715,8 @@ class TestEXJSONSerialization(TestCase):
         result = self._scenarios.loads_json_evaluate_raw_date_value("""{
                     "date": "$.now('yyyy-MM-dd W q')"
                     }""", "formatted_now_week_and_quarter")
-        v = f"{datetime.now().strftime('%Y-%m-%d')} {datetime.now().isocalendar()[1]} {((datetime.now().month - 1) // 3) + 1}"
-        # print(f"EXP: {v}  RESULT: {result['date']}")
+        v = f"{datetime.now().strftime('%Y-%m-%d')} {datetime.now().isocalendar()[1]} {((datetime.now().month-1)//3)+1}"
+        print(f"{v} {result['date']}")
         self.assertTrue(result["date"] == v)
 
     def test_loads_json_evaluate_python_formatted_now_add_date_value(self):
@@ -1022,20 +1018,20 @@ class TestEXJSONSerialization(TestCase):
 
     def test_load_json_evaluate_file_checksum(self):
         result = self._scenarios.loads_json_evaluate("""{
-                            "file": "../LICENSE",
-                            "checksum": "$.file_checksum('../LICENSE')"
+                            "file": "./LICENSE",
+                            "checksum": "$.file_checksum('./LICENSE')"
                             }""", "file_checksum_md5")
         self.assertDictEqual(result, {
-            "file": "../LICENSE",
+            "file": "./LICENSE",
             "checksum": "4ea2181c46fbca2e818752acd46ef052"
         })
 
     def test_load_json_evaluate_file_checksum_sh1(self):
         result = self._scenarios.loads_json_evaluate("""{
-                            "file": "../LICENSE",
-                            "checksum": "$.file_checksum('../LICENSE','sha1')"
+                            "file": "./LICENSE",
+                            "checksum": "$.file_checksum('./LICENSE','sha1')"
                             }""", "file_checksum_sha1")
         self.assertDictEqual(result, {
-            "file": "../LICENSE",
+            "file": "./LICENSE",
             "checksum": "9676540206bb2ea20122340f93d1b7b9ffabfb60"
         })

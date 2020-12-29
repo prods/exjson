@@ -44,5 +44,5 @@ def generate_call_graph(func):
                                                    output_format="png"), config=_call_graph_config):
                 return func(s, *args, **kwargs)
         else:
-            return func(s, *args, **kwargs)
+            return func(*args, **kwargs)
     return wrapper

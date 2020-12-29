@@ -1,6 +1,5 @@
 import hashlib
 
-
 def file_checksum(*args):
     if len(args) == 0:
         raise AttributeError("Checksum error: a file path is required.")

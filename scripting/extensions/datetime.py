@@ -4,22 +4,11 @@ from dateutil.tz import tzlocal
 
 from scripting.extensions.tools import is_windows
 
+def get_quarter(date:datetime.date):
+    return ((date.month-1)//3)+1
 
-def get_quarter(date: datetime.date):
-    return ((date.month - 1) // 3) + 1
-
-
-def get_quarter_padded(date: datetime.date):
+def get_quarter_padded(date:datetime.date):
     return str(get_quarter(date)).zfill(2)
-
-
-def get_week(date: datetime.date):
-    return date.isocalendar()[1]
-
-
-def get_week_padded(date: datetime.date):
-    return str(get_week(date)).zfill(2)
-
 
 _NOT_PADDING_CHAR = '-'
 if is_windows():
@@ -28,8 +17,8 @@ if is_windows():
 _DATETIME_FORMAT_MAP = [
     ("dddd", "%A", None),  # Weekday as locale’s full name. Ex. "Monday"
     ("ddd", "%a", None),  # Weekday as locale’s abbreviated name. Ex. "Mon"
-    ("w", "%w", None),  # Weekday as a decimal number, where 0 is Sunday and 6 is Saturday. Ex. "1"
-    ("ww", f"%{_NOT_PADDING_CHAR}w", None),  # Weekday as zero padded number
+    ("w", "%w", None), # Weekday as a decimal number, where 0 is Sunday and 6 is Saturday. Ex. "1"
+    ("ww", f"%{_NOT_PADDING_CHAR}w", None), # Weekday as zero padded number
     ("dd", "%d", None),  # Day of the month as a zero-padded decimal number. Ex. "30"
     ("MMMM", "%B", None),  # Month as locale’s full name. Ex. "September"
     ("MMM", "%b", None),  # Month as locale’s abbreviated name. Ex. "Sep"
@@ -51,16 +40,12 @@ _DATETIME_FORMAT_MAP = [
     ("z", "%z", None),  # UTC offset in the form +HHMM or -HHMM (empty string if the the object is naive). Ex. ""
     ("j", "%j", None),  # Day of the year as a zero-padded decimal number. Ex. "273"
     ("jj", f"%{_NOT_PADDING_CHAR}j", None),  # Day of the year as a decimal number. (Platform specific) Ex. "273",
-    ("WW", None, get_week_padded),
-    # Week number of the year (Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0
-    ("W", None, get_week),
-    # Week number of the year (Sunday as the first day of the week) as a decimal number. All days in a new year preceding the first Sunday are considered to be in week 0
-    ("UU", "%U", None),
-    # Week number of the year (Monday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
-    ("U", f"%{_NOT_PADDING_CHAR}U", None),
-    # Week number of the year (Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
-    ("qq", None, get_quarter_padded),  # Calendar Year quarter as padded number
-    ("q", None, get_quarter),  # Calendar Year quarter as integer
+    ("WW", "%W", None), # Week number of the year (Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0
+    ("W", f"%{_NOT_PADDING_CHAR}W", None), # Week number of the year (Sunday as the first day of the week) as a decimal number. All days in a new year preceding the first Sunday are considered to be in week 0
+    ("UU", "%U", None), #Week number of the year (Monday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
+    ("U", f"%{_NOT_PADDING_CHAR}U", None), #Week number of the year (Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
+    ("qq", None, get_quarter_padded), # Calendar Year quarter as padded number
+    ("q", None, get_quarter), # Calendar Year quarter as integer
     ("F", "%c", None),  # Locale’s appropriate date and time representation. Ex. "Mon Sep 30 07:06:05 2013"
     ("D", "%x", None),  # Locale’s appropriate date representation. Ex. "09/30/13"
     ("T", "%X", None),  # Locale’s appropriate time representation. Ex. "07:06:05"
@@ -68,7 +53,6 @@ _DATETIME_FORMAT_MAP = [
 ]
 
 _formats_cache = {}
-
 
 def _get_now():
     """Gets current date, time and local timezone"""
@@ -88,7 +72,6 @@ def now(*args):
         frmt = args[0]
     return _format(now, frmt)
 
-
 def now_utc(*args):
     """Gets current UTC date and time."""
     now = _get_now_utc()
@@ -100,14 +83,13 @@ def now_utc(*args):
 
 def now_add(*args):
     """Adds or subtract Time to """
-    result = _add_time(_get_now(), *args)
+    result = _add_time(_get_now(), *args) 
     return result
 
 
 def now_utc_add(*args):
     result = _add_time(_get_now_utc(), *args)
     return result
-
 
 def _add_time(date, *args):
     result = date
@@ -144,14 +126,14 @@ def _add_time(date, *args):
                 result = result - timedelta(weeks=value)
         elif uom == "months":
             if add:
-                result = result + timedelta(days=value * 365 / 12)
+                result = result + timedelta(days=value*365/12)
             else:
-                result = result - timedelta(days=value * 365 / 12)
+                result = result - timedelta(days=value*365/12)
         elif uom == "years":
             if add:
-                result = result + timedelta(days=value * 365)
+                result = result + timedelta(days=value*365)
             else:
-                result = result - timedelta(days=value * 365)
+                result = result - timedelta(days=value*365)
         elif uom == "hours":
             if add:
                 result = result + timedelta(hours=value)
@@ -183,10 +165,9 @@ def _format(dt: datetime, format=None):
         if format not in _formats_cache.keys():
             _formats_cache[format] = _convert_universal_format(format)
         result = dt.strftime(_formats_cache[format][0])
-        _token_handlers = _formats_cache[format][1]
-        if _token_handlers is not None:
-            for token in _token_handlers:
-                result = result.replace(token, str(_token_handlers[token](dt)))
+        if _formats_cache[format][1] is not None:
+            for token in _formats_cache[format][1]:
+                result = result.replace(token, str(_formats_cache[format][1][token](dt)))
         return result
     if dt.utcoffset() is None:
         return dt.isoformat() + "-00:00"
@@ -211,4 +192,4 @@ def _convert_universal_format(format):
                 python_format = python_format.replace(f[0], f[1])
             del token_map[i]
         i += 1
-    return python_format, calculated_tokens
+    return (python_format, calculated_tokens)
