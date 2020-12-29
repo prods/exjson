@@ -59,7 +59,7 @@ def loads(json_string, encoding=None, cls=None, object_hook=None, parse_float=No
     if kw is not None and _PARENT_FILE_KEY in kw:
         kw.pop(_PARENT_FILE_KEY, None)
     json_source = parse(json_source, error_on_invalid_value)
-    return json.loads(json_source, encoding=encoding, cls=cls, object_hook=object_hook, parse_float=parse_float,
+    return json.loads(json_source, cls=cls, object_hook=object_hook, parse_float=parse_float,
                       parse_int=parse_int, parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
 
 
@@ -75,6 +75,7 @@ def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
 def register_custom_scripting_extension(name, fn):
     """Registers a custom scripting extension function"""
     return extensions.register_extension_function(name, fn)
+
 
 def _include_files(include_files_path, string, encoding=None, cache=None, error_on_file_not_found=False,
                    parent_file_paths=None):
@@ -98,7 +99,7 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                     default_value = None
                     file_expected_checksum = None
                     if ":" in file_name:
-                        values = file_name.split(":",1)
+                        values = file_name.split(":", 1)
                         property_name = values[0]
                         file_name = values[1]
                         if '|' in file_name:
@@ -138,7 +139,7 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
                                     raise IOError("Included file '{0}' was not found.".format(include_file_path))
                                 else:
                                     if default_value is not None:
-                                        cache[include_file_path] = { "src": default_value }
+                                        cache[include_file_path] = {"src": default_value}
             # Extract content from include file removing comments, end of lines and tabs
             if include_file_path in cache:
                 included_source = cache[include_file_path]["src"]
@@ -175,8 +176,9 @@ def _include_files(include_files_path, string, encoding=None, cache=None, error_
     except Exception as ex:
         raise IncludeError(exception=ex)
 
+
 def _download_file(url, local_path):
-    file_name = url[url.rfind("/")+1:]
+    file_name = url[url.rfind("/") + 1:]
     if not file_name.endswith('.json'):
         file_name = f"{file_name}.json"
     info_file_name = file_name.replace('.json', '.http.json')
@@ -216,20 +218,19 @@ def _check_file_checksum(file_path, checksum):
     return _get_file_checksum(file_path).lower() == checksum.lower()
 
 
-def _process_value_calls(json_source, error_on_invalid_value=False):
-    cached_values = {}
-    if not ("$." in json_source or "this." in json_source):
-        return json_source
-    # Process ref or dyn value calls
-    dyn_ref_calls = re.finditer(_DYN_REF_VALUE_CALL, json_source)
-    # Files Cache 
-    for match_num, match in enumerate(dyn_ref_calls):
-        if len(match.groups()) > 0:
-            for value in match.groups():
-                if value is None:
-                    continue
-                print(value)
-    return json_source
+# def _process_value_calls(json_source, error_on_invalid_value=False):
+#     cached_values = {}
+#     if not ("$." in json_source or "this." in json_source):
+#         return json_source
+#     # Process ref or dyn value calls
+#     dyn_ref_calls = re.finditer(_DYN_REF_VALUE_CALL, json_source)
+#     # Files Cache
+#     for match_num, match in enumerate(dyn_ref_calls):
+#         if len(match.groups()) > 0:
+#             for value in match.groups():
+#                 if value is None:
+#                     continue
+#     return json_source
 
 
 def _remove_comments(string):
