@@ -23,7 +23,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     # This is the name of your project. The first time you publish this
     # package, this name will be registered for you. It will determine how
-    # users can install this project, e.g.:
+    # users can install this project, e.g.:piano
     #
     # $ pip install xjson
     #
@@ -108,6 +108,8 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
 
     # This field adds keywords for your project which will appear on the
