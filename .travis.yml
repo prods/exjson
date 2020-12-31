@@ -2,8 +2,9 @@ language: python
 cache: pip
 python:
   - "3.6"
-  - "3.6-dev"
-  - "3.7-dev"
+  - "3.7"
+  - "3.8"
+  - "3.9"
 before_install:
   - sudo apt-get install graphviz libgraphviz-dev -y
   - echo 'America/New_York' | sudo tee /etc/timezone
@@ -16,6 +17,7 @@ install:
   - pip install -r requirements.txt
   - pip install -e .
 script:
+  - cd "$SRC_ROOT/tests"
   - python -m unittest discover -s "$SRC_ROOT/tests" -t "$SRC_ROOT/tests"
 #deploy:
 #  provider: pypi
